@@ -5,12 +5,15 @@ import XLSX from "xlsx";
 import { Address } from "./address.model";
 import path from "path";
 import QueryBuilder from "../../builder/QueryBuilder";
+import { translateLanguages } from "../../../helpers/translateHelper";
 const createAddressIntoDB = async (address: string) => {
     const { latitude: lat, longitude: lon } = await getFromOSM(address);
 
+    
+    
+
 
     const latlong = await geosearchEn(lat!, lon!);
-    console.log(latlong);
     
    await savedLocationsInDB(latlong);
     return;
@@ -23,6 +26,8 @@ const createAddressSingleIntoDB = async (address: IAddress) => {
         type: "Point",
         coordinates: [address.longitude, address.latitude],
     }
+
+    address.diff_lang = await translateLanguages(address.summary!, address.name);
 
 
     const latlong = await Address.create(address);
@@ -38,7 +43,8 @@ const addDataFromExcelSheet =async (pathData: string)=>{
     const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
 
     // Convert to IAddress format
-    const addresses = sheet.map((row) => ({
+    const addresses = await Promise.all(
+      sheet.map(async (row) => ({
       name: row.name,
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
@@ -55,7 +61,9 @@ const addDataFromExcelSheet =async (pathData: string)=>{
         type: "Point",
         coordinates: [Number(row.longitude), Number(row.latitude)],
       },
-    }));
+      diff_lang:await translateLanguages(row.summary!, row.name),
+    }))
+    )
 
     // Save to MongoDB
     const saved = await Address.insertMany(addresses);

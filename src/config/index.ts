@@ -23,4 +23,7 @@ export default {
     email: process.env.SUPER_ADMIN_EMAIL,
     password: process.env.SUPER_ADMIN_PASSWORD,
   },
+  locationQ:{
+    key: process.env.LOCATIONQ_KEY
+  }
 };

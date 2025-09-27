@@ -1,4 +1,5 @@
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
+import config from '../config';
 
 export const getLatlongUsingAddress = async (address: string) => {
   const query = `
@@ -12,33 +13,35 @@ export const getLatlongUsingAddress = async (address: string) => {
   LIMIT 1
   `;
 
-  const url = "https://query.wikidata.org/sparql";
+  const url = 'https://query.wikidata.org/sparql';
 
   try {
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/sparql-query",
-        "Accept": "application/sparql-results+json",
+        'Content-Type': 'application/sparql-query',
+        Accept: 'application/sparql-results+json',
       },
       body: query,
     });
 
     if (!response.ok) {
-      throw new Error(`Wikidata error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Wikidata error: ${response.status} ${response.statusText}`
+      );
     }
 
-    const data:any = await response.json();
+    const data: any = await response.json();
 
     if (!data.results.bindings.length) {
-      return { error: "No results found" };
+      return { error: 'No results found' };
     }
 
     const result = data.results.bindings[0];
     const [lat, lon] = result.coord.value
-      .replace("Point(", "")
-      .replace(")", "")
-      .split(" ")
+      .replace('Point(', '')
+      .replace(')', '')
+      .split(' ')
       .map(parseFloat);
 
     return {
@@ -47,8 +50,8 @@ export const getLatlongUsingAddress = async (address: string) => {
       place: result.placeLabel.value,
     };
   } catch (err) {
-    console.error("Error fetching coordinates:", err);
-    return { error: "Failed to fetch coordinates" };
+    console.error('Error fetching coordinates:', err);
+    return { error: 'Failed to fetch coordinates' };
   }
 };
 
@@ -83,7 +86,7 @@ export const getLatlongUsingAddress = async (address: string) => {
 
 //     const text = await response.text();
 //     console.log(text);
-    
+
 //     if (!text) {
 //       throw new Error("Empty response from Wikidata");
 //     }
@@ -116,11 +119,11 @@ export const getFromOSM = async (address: string) => {
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "VoyazenApp/1.0 (sharif@example.com)",
+        'User-Agent': 'VoyazenApp/1.0 (sharif@example.com)',
       },
     });
 
-    const results:any = await response.json();
+    const results: any = await response.json();
     if (!results.length) return {};
 
     return {
@@ -129,7 +132,18 @@ export const getFromOSM = async (address: string) => {
       place: results[0].display_name,
     };
   } catch (err) {
-    console.error("OSM fallback error:", err);
-    return {};
+    console.error('OSM fallback error:', err);
+    console.error('OSM primary failed, falling back to LocationIQ...');
+    // Example fallback provider
+    const url = `https://us1.locationiq.com/v1/search.php?key=${config.locationQ.key}&q=${address}&format=json`;
+    const res = await fetch(url);
+
+    
+    const data: any = await res.json();
+    return {
+      latitude: data[0].lat,
+      longitude: data[0].lon,
+      place: data[0].display_name,
+    };
   }
 };

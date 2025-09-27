@@ -24,7 +24,8 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
             type: [Number],
             required: true
         }
-    }
+    },
+    diff_lang:{type: Object, required: false},
 });
 
 addressSchema.index({ latitude: 1, longitude: 1 });

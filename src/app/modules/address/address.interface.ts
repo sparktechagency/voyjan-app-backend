@@ -16,7 +16,8 @@ export type IAddress = {
     location:{
         type: "Point";
         coordinates: number[]
-    }
+    },
+    diff_lang?:Record<string, {translateText: string}>
 };
 
 

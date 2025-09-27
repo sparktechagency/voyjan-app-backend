@@ -2,6 +2,7 @@ import axios from "axios";
 import { LocationInfo } from "../app/modules/address/address.interface";
 import wikipedia from "wikipedia"
 import { Address } from "../app/modules/address/address.model";
+import { translateLanguages } from "./translateHelper";
 export const geosearchEn = async (lat: number, lon: number, radius = 10000, limit = 100): Promise<any[]> => {
     const params = {
         action: "query",
@@ -48,6 +49,7 @@ export const savedLocationsInDB = async (locations: LocationInfo[]) => {
             state: '',
             country: '',
             postalCode: '',
+            diff_lange:await translateLanguages(summary.extract,location.title),
             location: {
                 type: "Point",
                 coordinates: [location.lon, location.lat]
