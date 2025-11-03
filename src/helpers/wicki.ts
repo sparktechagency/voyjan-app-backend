@@ -9,7 +9,7 @@ import { Category } from "../app/modules/category/category.model";
 import { generateAiContnents, getTheTypeUsingAI } from "./generateDescriptions";
 import config from "../config";
 import { RedisHelper } from "./redisHelper";
-export const geosearchEn = async (lat: number, lon: number, radius = 1000, limit =200): Promise<any[]> => {
+export const geosearchEn = async (lat: number, lon: number, radius = 10000, limit =200): Promise<any[]> => {
     const params = {
         action: "query",
         list: "geosearch",
