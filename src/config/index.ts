@@ -25,5 +25,8 @@ export default {
   },
   locationQ:{
     key: process.env.LOCATIONQ_KEY
+  },
+  gemini:{
+    key : process.env.GEMINI_API_KEY
   }
 };

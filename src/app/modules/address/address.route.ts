@@ -5,7 +5,8 @@ const router = express.Router();
 router.post("/", AddressController.createAddress).get("/", AddressController.getAllAddress);
 router.post("/single", AddressController.saveSingleAddress);
 router.post("/sheet", fileUploadHandler(), AddressController.saveSheetAddress);
+router.get("/search-address", AddressController.searchAddress);
 router.get("/search", AddressController.searchPlaces);
 
-router.route("/:id").patch(AddressController.updateAddress).delete(AddressController.deleteAddress);
+router.route("/:id").patch(AddressController.updateAddress).delete(AddressController.deleteAddress).get(AddressController.getSingleAddress);
 export const AddressRoutes = router;

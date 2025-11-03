@@ -6,6 +6,7 @@ import config from './config';
 import { seedSuperAdmin } from './DB/seedAdmin';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger';
+import { addressConsumer, addressUpdateConsumer, kafkaConsumer, updateLangConsumer } from './handlers/kafka.consumer';
 
 //uncaught exception
 process.on('uncaughtException', error => {
@@ -21,6 +22,8 @@ async function main() {
 
     //Seed Super Admin after database connection is successful
     await seedSuperAdmin();
+
+    kafkaConsumer()
 
     const port =
       typeof config.port === 'number' ? config.port : Number(config.port);

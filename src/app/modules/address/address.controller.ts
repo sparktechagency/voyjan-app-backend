@@ -3,14 +3,14 @@ import catchAsync from "../../../shared/catchAsync";
 import { AddressService } from "./address.service";
 import sendResponse from "../../../shared/sendResponse";
 import { getSingleFilePath } from "../../../shared/getFilePath";
+import { kafkaProducer } from "../../../handlers/kafka.producer";
 
 const createAddress = catchAsync(async (req:Request,res:Response) => {
-
-    const createdAddress = await AddressService.createAddressIntoDB(req.body?.address);
+    await kafkaProducer.sendMessage('address', req.body?.address);
+    // const createdAddress = await AddressService.createAddressIntoDB(req.body?.address);
     sendResponse(res, {
         success: true,
         message: "Address created successfully",
-        data: createdAddress,
         statusCode: 200,
     });
 })
@@ -38,7 +38,9 @@ const saveSheetAddress = catchAsync(async (req:Request,res:Response) => {
 })
 
 const searchPlaces = catchAsync(async (req:Request,res:Response) => {
-    const createdAddress = await AddressService.searchByLatlong(req.query.search as string,req.query.radius as string);
+   
+    
+    const createdAddress = await AddressService.searchByLatlong({latitude: req.query.latitude ,longitude: req.query.longitude } as any,req.query.radius as string,req.query.lang as string,req.query.type as string[]);
     sendResponse(res, {
         success: true,
         message: "Address fetch successfully",
@@ -78,6 +80,27 @@ const getAllAddress = catchAsync(async (req:Request,res:Response) => {
     });
 })
 
+const searchAddress = catchAsync(async (req:Request,res:Response) => {
+    const createdAddress = await AddressService.searchAddress(req.query.address as string);
+    sendResponse(res, {
+        success: true,
+        message: "Address deleted successfully",
+        data: createdAddress,
+        statusCode: 200,
+    });
+})
+
+
+const getSingleAddress = catchAsync(async (req:Request,res:Response) => {
+    const createdAddress = await AddressService.singleAaddressFromDB(req.params.id,req.query.lang as string);
+    sendResponse(res, {
+        success: true,
+        message: "Address deleted successfully",
+        data: createdAddress,
+        statusCode: 200,
+    });
+})
+
 
 
 export const AddressController = {
@@ -87,5 +110,7 @@ export const AddressController = {
     searchPlaces,
     updateAddress,
     deleteAddress,
-    getAllAddress
+    getAllAddress,
+    searchAddress,
+    getSingleAddress
 }

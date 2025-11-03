@@ -9,11 +9,12 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
     formattedAddress: { type: String, required: true },
     imageUrl: [{ type: String, required: false }],
     summary: { type: String, required: false },
-    type: { type: String, required: false },
+    type: { type: String, required: false,default:"Other" },
     city: { type: String, required: false },
     state: { type: String, required: false },
     country: { type: String, required: false },
     postalCode: { type: String, required: false },
+    long_descreption: { type: String, required: false },
     location:{
         type: {
             type: String,
@@ -25,7 +26,13 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
             required: true
         }
     },
-    diff_lang:{type: Object, required: false},
+    diff_lang:{
+        type:mongoose.Schema.Types.Mixed
+    },
+    isCompleted:{type:Boolean,required:false,default:false},
+    pageid:{type:Number,required:false},
+},{
+    timestamps: true
 });
 
 addressSchema.index({ latitude: 1, longitude: 1 });
@@ -37,6 +44,7 @@ addressSchema.pre("save", function (next) {
     };
     next();
 })
+
 
 
 

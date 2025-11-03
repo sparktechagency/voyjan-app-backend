@@ -1,56 +1,66 @@
-import { getFromOSM, getLatlongUsingAddress } from "../../../helpers/getLatlongUsingAddress";
-import { geosearchEn, savedLocationsInDB } from "../../../helpers/wicki";
-import { IAddress } from "./address.interface";
-import XLSX from "xlsx";
-import { Address } from "./address.model";
-import path from "path";
-import QueryBuilder from "../../builder/QueryBuilder";
-import { translateLanguages } from "../../../helpers/translateHelper";
+import {
+  getFromOSM,
+  getLatlongUsingAddress,
+} from '../../../helpers/getLatlongUsingAddress';
+import {
+  addNotFoundData,
+  addShortDescription,
+  geosearchEn,
+  savedLocationsInDB,
+  savedLocationsInDBParrelal,
+} from '../../../helpers/wicki';
+import { ElastcSaveType, IAddress } from './address.interface';
+import XLSX from 'xlsx';
+import { Address } from './address.model';
+import path from 'path';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { translateLanguages } from '../../../helpers/translateHelper';
+import { Server } from 'socket.io';
+import { elasticHelper } from '../../../handlers/elasticSaveData';
+import ApiError from '../../../errors/ApiError';
+import { StatusCodes } from 'http-status-codes';
+import { generateAiContnents } from '../../../helpers/generateDescriptions';
+import { RedisHelper } from '../../../helpers/redisHelper';
 const createAddressIntoDB = async (address: string) => {
-    const { latitude: lat, longitude: lon } = await getFromOSM(address);
+  const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
-    
-    
+  if (!lat || !lon) return;
+  const latlong = await geosearchEn(lat!, lon!);
 
-
-    const latlong = await geosearchEn(lat!, lon!);
-    
-   await savedLocationsInDB(latlong);
-    return;
-    
-}
-
+  await savedLocationsInDBParrelal(latlong, place);
+  return;
+};
 
 const createAddressSingleIntoDB = async (address: IAddress) => {
-    address.location = {
-        type: "Point",
-        coordinates: [address.longitude, address.latitude],
-    }
-
-    address.diff_lang = await translateLanguages(address.summary!, address.name);
+const { latitude: lat, longitude: lon, place } = await getFromOSM(address.name);
 
 
-    const latlong = await Address.create(address);
-    return latlong
-}
+  if (!lat || !lon) return;
+  const latlong = await geosearchEn(lat!, lon!,1000,1);
 
-const addDataFromExcelSheet =async (pathData: string)=>{
-    // Parse Excel
+  console.log(latlong);
+  
+  await savedLocationsInDBParrelal(latlong, place);
+  return;
+};
 
-    const filePath = path.join(process.cwd(),"uploads", pathData);
-    const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
+const addDataFromExcelSheet = async (pathData: string) => {
+  // Parse Excel
 
-    // Convert to IAddress format
-    const addresses = await Promise.all(
-      sheet.map(async (row) => ({
+  const filePath = path.join(process.cwd(), 'uploads', pathData);
+  const workbook = XLSX.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
+
+  // Convert to IAddress format
+  const addresses = await Promise.all(
+    sheet.map(async row => ({
       name: row.name,
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
       place: row.place,
       formattedAddress: row.formattedAddress,
-      imageUrl: row.imageUrl ? String(row.imageUrl).split(",") : [],
+      imageUrl: row.imageUrl ? String(row.imageUrl).split(',') : [],
       summary: row.summary || undefined,
       type: row.type || undefined,
       city: row.city || undefined,
@@ -58,62 +68,177 @@ const addDataFromExcelSheet =async (pathData: string)=>{
       country: row.country || undefined,
       postalCode: row.postalCode || undefined,
       location: {
-        type: "Point",
+        type: 'Point',
         coordinates: [Number(row.longitude), Number(row.latitude)],
       },
-      diff_lang:await translateLanguages(row.summary!, row.name),
+      diff_lang: await translateLanguages(
+        row.summary!,
+        row.name,
+        row.type!,
+        row.formattedAddress
+      ),
     }))
-    )
+  );
+  const io = (global as any).io as Server;
 
-    // Save to MongoDB
-    const saved = await Address.insertMany(addresses);
-
-    return saved
-}
+  for (const address of addresses) {
 
 
-const searchByLatlong = async (address: string,radius: string="5") => {
-    const latlong = await getFromOSM(address);
-    const addresses = await Address.find({
-  location: {
-    $near: {
-      $geometry: {
-        type: "Point",
-        coordinates: [latlong.longitude, latlong.latitude], // lng, lat
+    const saved = await Address.create(address);
+
+    await elasticHelper.createIndex('address', saved._id.toString()!, address);
+    io.emit('add-address', saved?.name);
+  }
+
+  return;
+};
+
+const searchByLatlong = async (
+  latlong: { latitude: number; longitude: number },
+  radius: string = '5',
+  lang: string = 'English',
+  type: string[] = []
+) => {
+
+  const cache = await RedisHelper.redisGet("address",{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude});
+  if(cache) {
+    console.log('cache found');
+    return cache
+    
+  }
+  const addresses = await Address.find({
+    ...(type?.length && { type: { $in: type } }),
+    location: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates: [latlong.longitude, latlong.latitude], // lng, lat
+        },
+        $maxDistance: Number(radius) * 1000, // optional: in meters (e.g., 5km)
+        $minDistance: 0, // optional
       },
-      $maxDistance: Number(radius)*1000, // optional: in meters (e.g., 5km)
-      $minDistance: 0,    // optional
     },
-  },
-});
-    return addresses;
-}
+  },{diff_lang:0}).lean();
 
+  if (!addresses.length){
+    addNotFoundData(latlong.latitude, latlong.longitude);
+  }
+
+  if(addresses.length) {
+    await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude});
+  }
+
+
+  return addresses
+};
 
 const getAllAddress = async (query: Record<string, unknown>) => {
-    const addressQuery = new QueryBuilder(Address.find(), query).filter().search(['name']).sort().paginate()
+  const addressQuery = new QueryBuilder(Address.find(), query)
+    .filter()
+    .search(['name'])
+    .sort()
+    .paginate();
 
-    const [address,pagination] = await Promise.all([addressQuery.modelQuery.lean(), addressQuery.getPaginationInfo()])
-    return {address,pagination}
-}
+  const [address, pagination] = await Promise.all([
+    addressQuery.modelQuery.lean(),
+    addressQuery.getPaginationInfo(),
+  ]);
 
-const updateAddress = async (addressId: string, data: Record<string, unknown>) => {
-    const address = await Address.findOneAndUpdate({ _id: addressId }, data, { new: true });
-    return address;
-}
+  return { address, pagination };
+};
+
+const updateAddress = async (
+  addressId: string,
+  data: Record<string, unknown>
+) => {
+  const address = await Address.findOneAndUpdate({ _id: addressId }, data, {
+    new: true,
+  });
+  return address;
+};
 
 const deleteAddress = async (addressId: string) => {
-    const address = await Address.findByIdAndDelete(addressId);
-    return address;
+  const address = await Address.findByIdAndDelete(addressId);
+  return address;
+};
+
+const searchAddress = async (address: string) => {
+  const searchData = await elasticHelper.searchIndex('address', address, [
+    'type',
+    'diff_lang.*.translateText',
+    'diff_lang.*.title',
+    'diff_lang.*.address',
+  ]);
+  
+  const data = searchData?.map(address => {
+    delete (address._source as any)?.diff_lang
+    return {
+      ...(address?._source || {}),
+      _id: address?._id,
+    };
+  });
+
+  return data;
+};
+
+const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
+  const cache = await RedisHelper.redisGet("address",{addressId:addressId,lang:lang});
+  if(cache) {
+    console.log('cache found');
+    return cache
+  }
+  const address = await Address.findById(addressId).lean();
+  if(!address) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
+
+  if(!address.long_descreption){
+    addShortDescription(address as any)
+  }
+  if(!address.diff_lang?.English?.translateText) {
+   createBackegroundDescription(address)
+  }
+
+  if(!address.diff_lang?.[lang]?.translateLong){
+
+    
+    if(!address.long_descreption){
+      addShortDescription(address as any)
+    }
+
+    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'')
+    await elasticHelper.updateIndex('address', address._id.toString()!, address)
+    await RedisHelper.keyDelete('address');
+  }
+
+  const data = {
+    translateText: address.diff_lang?.[lang]?.translateText||'',
+    translateLongText: address.diff_lang?.[lang]?.translateLong||'',
+    transltedTitle: address.diff_lang?.[lang]?.title||'',
+    transltedType: address.diff_lang?.[lang]?.type||'',
+    transltedAddress: address.diff_lang?.[lang]?.address||'',
+  }
+
+  await RedisHelper.redisSet("address",data,{addressId:addressId,lang:lang});
+  return data
 }
 
+
+async function createBackegroundDescription(address:any) {
+    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.place,address.long_descreption)
+    await elasticHelper.updateIndex('address', address._id.toString()!, address)
+      await Address.findOneAndUpdate({ _id: address._id }, {
+    diff_lang: address.diff_lang,}, {
+    new: true,
+  })
+}
 
 export const AddressService = {
-    createAddressIntoDB,
-    createAddressSingleIntoDB,
-    addDataFromExcelSheet,
-    searchByLatlong,
-    getAllAddress,
-    updateAddress,
-    deleteAddress
-}
+  createAddressIntoDB,
+  createAddressSingleIntoDB,
+  addDataFromExcelSheet,
+  searchByLatlong,
+  getAllAddress,
+  updateAddress,
+  deleteAddress,
+  searchAddress,
+  singleAaddressFromDB
+};

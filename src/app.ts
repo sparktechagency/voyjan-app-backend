@@ -12,7 +12,8 @@ app.use(Morgan.errorHandler);
 
 //body parser
 app.use(cors({
-  origin:['https://shariful5001.binarybards.online']
+  origin:['https://shariful5001.binarybards.online','http://10.10.7.6:5001',"http://10.10.7.6:5000",'http://10.10.7.6:5173'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
