@@ -8,6 +8,8 @@ const sendResponseFromChatbot = async (message: string, language?: string,userId
     const propmt = getPrompt(message,language,formatMessages);
     const response = await chatbot.generateContent(propmt);
 
+    console.log(response);
+    
     
 const res = response.response.text()?.replace(/(\r\n|\n|\r)/gm, " ");
 
