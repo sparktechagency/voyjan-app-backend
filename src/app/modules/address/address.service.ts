@@ -111,7 +111,7 @@ const searchByLatlong = async (
     
   }
   const addresses = await Address.find({
-    ...(type?.length && { type: { $in: type } }),
+    ...(type?.length ? { type: { $in: type } }: {}),
     location: {
       $near: {
         $geometry: {
@@ -124,7 +124,7 @@ const searchByLatlong = async (
     },
   },{diff_lang:0}).lean();
 
-  if (!addresses.length){
+  if (!addresses.length || addresses.length < 30) {
     addNotFoundData(latlong.latitude, latlong.longitude, Number(radius));
   }
 
