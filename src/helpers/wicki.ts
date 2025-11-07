@@ -298,6 +298,7 @@ export const addNotFoundData = async (lat:number,lon:number,radius = 10000 ) => 
   },{_id:1}).lean();
 
   console.log("not found runned");
+  console.log(addresses.length);
   
   if(addresses.length>30) return 
   const place = await getAddressFromLatLng(lat,lon);
