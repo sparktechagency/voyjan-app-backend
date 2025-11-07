@@ -252,7 +252,7 @@ async function addmissingImages(address:IAddress&{_id:string}) {
   await elasticHelper.updateIndex('address', address._id.toString()!, address)
   await RedisHelper.keyDelete(`${address._id}`);
   await redisClient.del(`${address._id}`)
-  
+  await RedisHelper.keyDelete(`address`);  
 }
 
 export const AddressService = {
