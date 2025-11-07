@@ -16,7 +16,7 @@ export const getTheTypeUsingAI=async(prompt: string) =>{
         const categories = (await Category.find({})).map((c) => c.name);
         const prompData = `
         this are my categories ${categories.join(", ")} of places
-        just read the text and give me the type of the place like museum,temple,church,market,etc
+        just read the text and give me the type of the place like museum,temple,church,market,etc only one and in string not markdown
         ${prompt}
         
         `
