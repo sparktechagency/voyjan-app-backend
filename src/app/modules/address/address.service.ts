@@ -124,7 +124,7 @@ const searchByLatlong = async (
   },{diff_lang:0}).lean();
 
   if (!addresses.length){
-    addNotFoundData(latlong.latitude, latlong.longitude);
+    addNotFoundData(latlong.latitude, latlong.longitude, Number(radius));
   }
 
   if(addresses.length) {
