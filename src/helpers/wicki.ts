@@ -209,8 +209,8 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
   for (const address of addresss) {
      try {
       console.log(address);
-      
-      const exist = await Address.findOne({pageid:address.pageid,summary:{$ne:""s}}).lean()
+      // check if the address already exists and if it not created at arount 2 minutes thats mean is that latest 
+      const exist = await Address.findOne({pageid:address.pageid,createdAt:{$gt:Date.now()-2*60*1000}}).lean()
       if(exist){
         
         
