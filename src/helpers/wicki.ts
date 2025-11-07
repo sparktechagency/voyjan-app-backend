@@ -208,10 +208,13 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
   const io = (global as any).io
   for (const address of addresss) {
      try {
+      console.log(address);
       
       const exist = await Address.findOne({pageid:address.pageid}).lean()
       if(exist){
         await Address.deleteOne({pageid:address.pageid,summary:""})
+        console.log('delete duplicate');
+  
         continue
       }
 
