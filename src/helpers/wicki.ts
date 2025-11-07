@@ -178,7 +178,7 @@ export const savedLocationsInDBParrelal = async (locations: LocationInfo[],place
             formattedAddress: item.title+","+place,
             imageUrl: [],
             summary: '',
-            type:"" ,
+            type: 'Other',
             city: '',
             state: '',
             country: '',
