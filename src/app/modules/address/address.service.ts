@@ -24,6 +24,8 @@ import { generateAiContnents } from '../../../helpers/generateDescriptions';
 import { RedisHelper } from '../../../helpers/redisHelper';
 import { redisClient } from '../../../config/redis.client';
 import { getImagesFromApi } from '../../../helpers/imageHelper';
+import { add } from 'winston';
+import { compressImageFromUrl } from '../../../helpers/comprass-icon';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -127,11 +129,12 @@ const searchByLatlong = async (
   }
 
   if(addresses.length) {
+    
     await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude},60);
   }
 
 
-  return addresses
+  return addresses;
 };
 
 const getAllAddress = async (query: Record<string, unknown>) => {

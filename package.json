@@ -57,6 +57,7 @@
     "node-google-translate-skidz": "^1.1.2",
     "nodemailer": "^6.9.14",
     "npm": "^10.8.1",
+    "sharp": "^0.34.5",
     "socket.io": "^4.7.5",
     "wiki": "^0.38.3",
     "wikipedia": "^2.1.2",
