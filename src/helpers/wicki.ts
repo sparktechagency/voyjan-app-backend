@@ -209,6 +209,10 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
   for (const address of addresss) {
      try {
       
+      const exist = await Address.findOne({pageid:address.pageid}).lean()
+      if(exist){
+        await Address.deleteOne({pageid:address.pageid,summary:""})
+      }
 
       // make the whole thing using api of wikipedia
       const page = await wikipedia.page(address.pageid as any as string);
