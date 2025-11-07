@@ -193,6 +193,9 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
   const address = await Address.findById(addressId).lean();
   if(!address) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
 
+  if(!address.imageUrl?.length){
+    addmissingImages(address as any)
+  }
   if(!address.long_descreption){
     addShortDescription(address as any)
   }
