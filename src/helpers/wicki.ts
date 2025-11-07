@@ -217,12 +217,14 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
       const images = await page.images();
       const imageUrls = images?.map(img => img.url).filter(url => url && ['jpg', 'png', 'jpeg'].includes(url?.split('.')?.pop()||"") );
       const type = await getGetCategory(page)
-      const data = await Address.findOneAndUpdate({pageid:address.pageid},{imageUrl:imageUrls,summary:summary.extract,type:type}, { new: true });
+      const data = await Address.findOneAndUpdate({pageid:address.pageid},{imageUrl:imageUrls,summary:summary.extract,type:type}, { new: true }).lean()
       console.log("data",data);
 
       // elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
      kafkaProducer.sendMessage("updateDescription",data)
       io.emit('address', data);
+      await RedisHelper.keyDelete("address")
+      await RedisHelper.keyDelete(`${data?._id}`);
      } catch (error) {
       console.log(error);
      }

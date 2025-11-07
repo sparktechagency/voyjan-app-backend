@@ -200,9 +200,11 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
 
   if(!address.diff_lang?.[lang]?.translateLong){
 
-    
-    if(!address.long_descreption){
+    if(!address.summary){
       addDetailsInExistingAddress([address as any])
+    }
+    if(!address.long_descreption){
+      
       addShortDescription(address as any)
     }
 
