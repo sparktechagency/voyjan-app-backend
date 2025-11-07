@@ -22,6 +22,7 @@ import ApiError from '../../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
 import { generateAiContnents } from '../../../helpers/generateDescriptions';
 import { RedisHelper } from '../../../helpers/redisHelper';
+import { redisClient } from '../../../config/redis.client';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -211,6 +212,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'')
     await elasticHelper.updateIndex('address', address._id.toString()!, address)
     await RedisHelper.keyDelete(`${addressId}`);
+    await redisClient.del(`${addressId}`);
   }
 
   const data = {

@@ -9,6 +9,7 @@ import { Category } from "../app/modules/category/category.model";
 import { generateAiContnents, getTheTypeUsingAI } from "./generateDescriptions";
 import config from "../config";
 import { RedisHelper } from "./redisHelper";
+import { redisClient } from "../config/redis.client";
 export const geosearchEn = async (lat: number, lon: number, radius = 10000, limit =200): Promise<any[]> => {
     const params = {
         action: "query",
@@ -225,6 +226,7 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
       io.emit('address', data);
       await RedisHelper.keyDelete("address")
       await RedisHelper.keyDelete(`${data?._id}`);
+      await redisClient.del(`${data?._id}`)
      } catch (error) {
       console.log(error);
      }
@@ -244,7 +246,8 @@ export const addLanguagesInExistingAddress = async (address:IAddress & {_id:stri
     const data = await Address.findOneAndUpdate({_id:address._id},{diff_lang:diff_lang}, { new: true });
 
     // elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
-
+    await RedisHelper.keyDelete(`${address._id}`);
+    await redisClient.del(`${address._id}`)
   } catch (error) {
     console.log(error);
     
@@ -270,6 +273,7 @@ export const addShortDescription = async (address:IAddress & {_id:string}) => {
 
     kafkaProducer.sendMessage("updateType",data)
    await RedisHelper.keyDelete(`${address._id}`)
+   await redisClient.del(`${address._id}`)
 
   } catch (error) {
     console.log(error);
