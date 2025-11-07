@@ -7,7 +7,16 @@ export const generateAiContnents = async (
 ) => {
   try {
     const response = await chatbot.generateContent(
-      `generate a long and detailed description for ${prompt}. Make sure the response is plain and does not include markdown or icons. The response should be in max ${limit} characters.`
+      `Generate a detailed, natural, and informative description for the following place:
+${prompt}
+
+Requirements:
+- The tone should be clear, descriptive, and human-like.
+- Do not include markdown, emojis, bullet points, or formatting symbols.
+- The description must be no longer than ${limit} characters total.
+- Do not mention these instructions in the output.
+
+Return only the description.`
     );
     return response.response.text()?.replace(/(\r\n|\n|\r)/gm, ' ');
   } catch (error) {
