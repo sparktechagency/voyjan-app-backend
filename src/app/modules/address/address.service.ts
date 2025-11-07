@@ -23,6 +23,7 @@ import { StatusCodes } from 'http-status-codes';
 import { generateAiContnents } from '../../../helpers/generateDescriptions';
 import { RedisHelper } from '../../../helpers/redisHelper';
 import { redisClient } from '../../../config/redis.client';
+import { getImagesFromApi } from '../../../helpers/imageHelper';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -236,6 +237,19 @@ async function createBackegroundDescription(address:any) {
     new: true,
   })
   await RedisHelper.keyDelete(`${address._id}`);
+}
+
+async function addmissingImages(address:IAddress&{_id:string}) {
+
+  const images = await getImagesFromApi(address.name);
+  await Address.findOneAndUpdate({ _id: address._id }, {
+    imageUrl: images,}, {
+    new: true,
+  })
+  await elasticHelper.updateIndex('address', address._id.toString()!, address)
+  await RedisHelper.keyDelete(`${address._id}`);
+  await redisClient.del(`${address._id}`)
+  
 }
 
 export const AddressService = {
