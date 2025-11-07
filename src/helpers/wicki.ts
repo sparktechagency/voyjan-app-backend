@@ -342,6 +342,8 @@ export async function getAddressFromLatLng(lat: number, lon: number) {
 export const addTypeInExistingAddress = async (address:IAddress & {_id:string}) => {
   try {
     const type = await getTheTypeUsingAI(address.summary!)
+    console.log(type);
+    
     const data = await Address.findOneAndUpdate({_id:address._id},{type:type}, { new: true });
     // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
     await RedisHelper.keyDelete(`${address._id}`);
