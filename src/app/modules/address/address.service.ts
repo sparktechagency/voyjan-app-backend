@@ -3,6 +3,7 @@ import {
   getLatlongUsingAddress,
 } from '../../../helpers/getLatlongUsingAddress';
 import {
+  addDetailsInExistingAddress,
   addNotFoundData,
   addShortDescription,
   geosearchEn,
@@ -201,6 +202,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
 
     
     if(!address.long_descreption){
+      addDetailsInExistingAddress([address as any])
       addShortDescription(address as any)
     }
 
