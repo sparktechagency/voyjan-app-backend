@@ -41,7 +41,7 @@ export const addressUpdateConsumer = async () => {
             const length = data.length;
             
             
-            await addDetailsInExistingAddress(data)
+            await addDetailsInExistingAddress(data,false)
             
             resolveOffset(message.offset)
         });

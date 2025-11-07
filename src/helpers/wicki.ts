@@ -205,12 +205,12 @@ export const savedLocationsInDBParrelal = async (locations: LocationInfo[],place
 }
 
 
-export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
+export const addDetailsInExistingAddress = async (addresss: LocationInfo[],exist:boolean=true) => {
   const io = (global as any).io
   for (const address of addresss) {
      try {
 
-      // check if the address already exists and if it not created at arount 2 minutes thats mean is that latest 
+      // 
       const exist = await Address.findOne({pageid:address.pageid,status:{$ne:"just"}}).lean()
       if(exist){
         
