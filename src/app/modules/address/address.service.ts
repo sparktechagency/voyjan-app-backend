@@ -109,19 +109,22 @@ const searchByLatlong = async (
     return cache
     
   }
-  const addresses = await Address.find({
-    ...(type?.length && { type: { $in: type } }),
-    location: {
-      $near: {
-        $geometry: {
-          type: 'Point',
-          coordinates: [latlong.longitude, latlong.latitude], // lng, lat
-        },
-        $maxDistance: Number(radius) * 1000, // optional: in meters (e.g., 5km)
-        $minDistance: 0, // optional
-      },
-    },
-  },{diff_lang:0}).distinct('pageid').lean();
+const addresses = await Address.aggregate([
+  {
+    $geoNear: {
+      near: { type: "Point", coordinates: [latlong.longitude, latlong.latitude] },
+      distanceField: "distance",
+      maxDistance: Number(radius) * 1000,
+      spherical: true
+    }
+  },
+  ...(type?.length ? [{ $match: { type: { $in: type } } }] : []),
+  {
+    $group: { _id: "$pageid", doc: { $first: "$$ROOT" } } // pick first document for each pageid
+  },
+  { $replaceRoot: { newRoot: "$doc" } },
+  { $project: { diff_lang: 0 } }
+]);
 
   if (!addresses.length){
     addNotFoundData(latlong.latitude, latlong.longitude, Number(radius));
