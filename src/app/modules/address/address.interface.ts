@@ -10,6 +10,7 @@ export type IAddress = {
     imageUrl?: string[];
     summary?: string;
     pageid?: number;
+    status?: string;
     type?: string;
     city?: string;
     isCompleted?: boolean;

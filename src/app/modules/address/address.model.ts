@@ -12,6 +12,7 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
     type: { type: String, required: false,default:"Other" },
     city: { type: String, required: false },
     state: { type: String, required: false },
+    status: { type: String, required: false },
     country: { type: String, required: false },
     postalCode: { type: String, required: false },
     long_descreption: { type: String, required: false },
@@ -44,6 +45,7 @@ addressSchema.pre("save", function (next) {
     };
     next();
 })
+
 
 
 

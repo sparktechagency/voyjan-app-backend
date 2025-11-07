@@ -181,6 +181,7 @@ export const savedLocationsInDBParrelal = async (locations: LocationInfo[],place
             type: 'Other',
             city: '',
             state: '',
+            status: 'just',
             country: '',
             postalCode: '',
             diff_lang:'',
@@ -210,11 +211,11 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
      try {
       console.log(address);
       // check if the address already exists and if it not created at arount 2 minutes thats mean is that latest 
-      const exist = await Address.findOne({pageid:address.pageid,createdAt:{$gt:Date.now()-2*60*1000}}).lean()
+      const exist = await Address.findOne({pageid:address.pageid,status:{$ne:"just"}}).lean()
       if(exist){
         
         
-        await Address.deleteOne({pageid:address.pageid,summary:""})
+        await Address.deleteOne({pageid:address.pageid})
         console.log('delete duplicate');
   
         continue
@@ -228,7 +229,7 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
       const images = await page.images();
       const imageUrls = images?.map(img => img.url).filter(url => url && ['jpg', 'png', 'jpeg'].includes(url?.split('.')?.pop()||"") );
       const type = await getGetCategory(page)
-      const data = await Address.findOneAndUpdate({pageid:address.pageid},{imageUrl:imageUrls,summary:summary.extract,type:type}, { new: true }).lean()
+      const data = await Address.findOneAndUpdate({pageid:address.pageid},{imageUrl:imageUrls,summary:summary.extract,type:type,status:""}, { new: true }).lean()
       console.log("data",data);
 
       // elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
