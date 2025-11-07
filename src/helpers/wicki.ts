@@ -221,6 +221,7 @@ export const addDetailsInExistingAddress = async (addresss: LocationInfo[]) => {
         continue
       }
 
+      await Address.findOneAndUpdate({pageid:address.pageid},{status:""}, { new: true }).lean()
       // make the whole thing using api of wikipedia
       const page = await wikipedia.page(address.pageid as any as string);
       const summary = await page.summary();
