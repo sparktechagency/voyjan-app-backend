@@ -217,7 +217,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     transltedAddress: address.diff_lang?.[lang]?.address||'',
   }
 
-  await RedisHelper.redisSet("address",data,{addressId:addressId,lang:lang});
+  await RedisHelper.redisSet("address",data,{addressId:addressId,lang:lang},1000000);
   return data
 }
 
@@ -229,6 +229,7 @@ async function createBackegroundDescription(address:any) {
     diff_lang: address.diff_lang,}, {
     new: true,
   })
+  await RedisHelper.keyDelete('address');
 }
 
 export const AddressService = {

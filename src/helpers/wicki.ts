@@ -267,6 +267,7 @@ export const addShortDescription = async (address:IAddress & {_id:string}) => {
     // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
 
     kafkaProducer.sendMessage("updateType",data)
+    RedisHelper.keyDelete("address")
 
   } catch (error) {
     console.log(error);
@@ -290,6 +291,7 @@ export const addNotFoundData = async (lat:number,lon:number,radius = 10000 ) => 
     },
   },{_id:1}).lean();
 
+  console.log("not found runned");
   
   if(addresses.length>30) return 
   const place = await getAddressFromLatLng(lat,lon);
@@ -335,6 +337,7 @@ export const addTypeInExistingAddress = async (address:IAddress & {_id:string}) 
     const type = await getTheTypeUsingAI(address.summary!)
     const data = await Address.findOneAndUpdate({_id:address._id},{type:type}, { new: true });
     // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
+    await RedisHelper.keyDelete("address")
   } catch (error) {
     console.log(error);
     

@@ -1,13 +1,21 @@
+import { RedisHelper } from "../../../helpers/redisHelper";
 import { ICategory } from "./category.interface";
 import { Category } from "./category.model";
 
 const createCategoryIntoDB = async (data:ICategory) => {
     const category = await Category.create(data);
+    await RedisHelper.keyDelete('category');
     return category;
 };
 
 const getAllCategoryFromDB = async () => {
+    const cache = await RedisHelper.redisGet("category",{});
+    if(cache){
+      console.log('cache found');
+      return cache
+    }
     const categories = await Category.find({});
+    await RedisHelper.redisSet('category',categories,{},1000000);
     return categories;
 };
 
@@ -15,11 +23,13 @@ const updateCategoryIntoDB = async (id: string, data: ICategory) => {
     const category = await Category.findOneAndUpdate({ _id: id }, data, {
         new: true,
     });
+    await RedisHelper.keyDelete('category');
     return category;
 };
 
 const deleteCategoryFromDB = async (id: string) => {
     const category = await Category.findOneAndDelete({ _id: id });
+    await RedisHelper.keyDelete('category');
     return category;
 };
 
