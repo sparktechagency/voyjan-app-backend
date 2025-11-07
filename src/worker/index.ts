@@ -8,6 +8,8 @@ export function startWorker() {
             console.log('Cron Job Runned');
             
             const unFinishedData = await Address.find({summary:{$exists:false}}).limit(10).lean();
+            console.log(unFinishedData);
+            
             await addDetailsInExistingAddress(unFinishedData as any);
         } catch (error) {
             console.log(error);
