@@ -102,7 +102,7 @@ const searchByLatlong = async (
   lang: string = 'English',
   type: string[] = []
 ) => {
-
+  await Address.deleteMany({summary:""});
   const cache = await RedisHelper.redisGet("address",{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude});
   if(cache) {
     console.log('cache found');
