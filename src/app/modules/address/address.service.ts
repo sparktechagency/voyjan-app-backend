@@ -128,7 +128,7 @@ const searchByLatlong = async (
   }
 
   if(addresses.length) {
-    await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude},100000);
+    await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude},60);
   }
 
 
