@@ -3,7 +3,7 @@ import { chatbot } from '../config/chatbot.config';
 
 export const generateAiContnents = async (
   prompt: string,
-  limit: number = 1000
+  limit: number = 500
 ) => {
   try {
     const response = await chatbot.generateContent(
