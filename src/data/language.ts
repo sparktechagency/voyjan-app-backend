@@ -56,4 +56,6 @@ export const language = [
   { "code": "te", "name": "Telugu" },
   { "code": "ro", "name": "Romanian" },
   {"code": "ar", "name": "Arabic"},
+  { "code": "zh-CN", "name": "Chinese" },
+  
 ];
