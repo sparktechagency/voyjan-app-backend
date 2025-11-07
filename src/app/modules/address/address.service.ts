@@ -125,7 +125,7 @@ const searchByLatlong = async (
   }
 
   if(addresses.length) {
-    await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude});
+    await RedisHelper.redisSet("address",addresses,{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude},100000);
   }
 
 
@@ -182,7 +182,7 @@ const searchAddress = async (address: string) => {
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
-  const cache = await RedisHelper.redisGet("address",{addressId:addressId,lang:lang});
+  const cache = await RedisHelper.redisGet(`${addressId}`,{lang:lang});
   if(cache) {
     console.log('cache found');
     return cache
@@ -206,7 +206,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
 
     address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'')
     await elasticHelper.updateIndex('address', address._id.toString()!, address)
-    await RedisHelper.keyDelete('address');
+    await RedisHelper.keyDelete(`${addressId}`);
   }
 
   const data = {
@@ -217,7 +217,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     transltedAddress: address.diff_lang?.[lang]?.address||'',
   }
 
-  await RedisHelper.redisSet("address",data,{addressId:addressId,lang:lang},1000000);
+  await RedisHelper.redisSet(`${addressId}`,data,{lang:lang},1000000);
   return data
 }
 
@@ -229,7 +229,7 @@ async function createBackegroundDescription(address:any) {
     diff_lang: address.diff_lang,}, {
     new: true,
   })
-  await RedisHelper.keyDelete('address');
+  await RedisHelper.keyDelete(`${address._id}`);
 }
 
 export const AddressService = {

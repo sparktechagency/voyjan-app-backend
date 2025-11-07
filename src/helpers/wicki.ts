@@ -267,7 +267,7 @@ export const addShortDescription = async (address:IAddress & {_id:string}) => {
     // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
 
     kafkaProducer.sendMessage("updateType",data)
-    RedisHelper.keyDelete("address")
+    RedisHelper.keyDelete(`${address._id}`)
 
   } catch (error) {
     console.log(error);
