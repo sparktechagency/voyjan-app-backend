@@ -54,5 +54,6 @@ export const language = [
   { "code": "or", "name": "Oriya" },
   { "code": "sl", "name": "Slovenian" },
   { "code": "te", "name": "Telugu" },
-  { "code": "ro", "name": "Romanian" }
+  { "code": "ro", "name": "Romanian" },
+  {"code": "ar", "name": "Arabic"},
 ];
