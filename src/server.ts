@@ -23,7 +23,6 @@ async function main() {
 
     //Seed Super Admin after database connection is successful
     await seedSuperAdmin();
-    startWorker()
     kafkaConsumer()
 
     const port =
