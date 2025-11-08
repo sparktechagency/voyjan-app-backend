@@ -28,7 +28,16 @@ export function startWorker() {
            console.log(finishedData);
            
            if(finishedData.length > 0){
-            await Promise.all(finishedData.map((address: any) => AddressService.singleAaddressFromDB(address._id)))
+            const CUNK_SIZE =3;
+            for (let i = 0; i < finishedData.length; i += CUNK_SIZE) {
+                const chunk = finishedData.slice(i, i + CUNK_SIZE);
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(chunk);
+                    }, 3000);
+                })
+               await Promise.all(chunk.map((data: any) => AddressService.singleAaddressFromDB(data._id.toString())));
+            }
            }
 
   
