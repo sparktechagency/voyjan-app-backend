@@ -4,21 +4,21 @@ import { addDetailsInExistingAddress, addTypeInExistingAddress } from "../helper
 import { AddressService } from "../app/modules/address/address.service";
 
 export function startWorker() {
-    cronJob.schedule("*/5 * * * *",async () => {
-        try {
-            console.log('Cron Job Runned');
+    // cronJob.schedule("*/5 * * * *",async () => {
+    //     try {
+    //         console.log('Cron Job Runned');
             
-            const unFinishedData = await Address.find({summary:''}).limit(10).lean();
-            console.log(unFinishedData);
+    //         const unFinishedData = await Address.find({summary:''}).limit(10).lean();
+    //         console.log(unFinishedData);
             
-            await addDetailsInExistingAddress(unFinishedData as any);
+    //         await addDetailsInExistingAddress(unFinishedData as any);
 
   
-        } catch (error) {
-            console.log(error);
+    //     } catch (error) {
+    //         console.log(error);
             
-        }
-    });
+    //     }
+    // });
 
     // run every 15 seconds
     cronJob.schedule("*/15 * * * * *", async () => {
@@ -34,10 +34,11 @@ export function startWorker() {
       }
     }
 
-    const otherTypes = await Address.findOne({type:{$in:['','Other']}})
-    if(otherTypes){
-      await addTypeInExistingAddress(otherTypes as any)
-    }
+    await addDetailsInExistingAddress(finishedData as any);
+    // const otherTypes = await Address.findOne({type:{$in:['','Other']}})
+    // if(otherTypes){
+    //   await addTypeInExistingAddress(otherTypes as any)
+    // }
 
   } catch (error) {
     console.log(error);
