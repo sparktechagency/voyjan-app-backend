@@ -13,6 +13,9 @@ import { generateAiContnents, getTheTypeUsingAI } from './generateDescriptions';
 import config from '../config';
 import { RedisHelper } from './redisHelper';
 import { redisClient } from '../config/redis.client';
+import { getCityByPageId, getCitySummary, WikiPage } from './cityHelper';
+
+wikipedia.setUserAgent('VoyazenApp/1.0 (sharif@example.com)');
 export const geosearchEn = async (
   lat: number,
   lon: number,
@@ -33,6 +36,9 @@ export const geosearchEn = async (
       'User-Agent': 'Voyazen/1.0 (https://voyazen.com; sharif@gmail)',
     },
   });
+
+
+  
 
   return res.data.query?.geosearch || [];
 };
@@ -106,13 +112,16 @@ export const savedLocationsInDB = async (
       // await elasticHelper.createIndex('address',data._id.toString(),data.toObject());
     } catch (error) {
       console.log(error);
+
     }
   }
   return;
 };
 
 const getGetCategory = async (page: any) => {
-  const categories = await page.categories();
+
+  const isTheCategoriesFunctionORNot = typeof page.categories === 'function';
+  const categories = isTheCategoriesFunctionORNot?await page.categories():page.categories as WikiPage["categories"]
 
   let placeType = 'Other';
 
@@ -120,10 +129,11 @@ const getGetCategory = async (page: any) => {
 
   for (const category of categoriesDb) {
     if (
-      categories.some((c: any) =>
-        c.toLowerCase().includes(category.name.toLowerCase())
-      )
+     isTheCategoriesFunctionORNot && categories.some((c:any) => c.toLowerCase().includes(category.name.toLowerCase()))
     ) {
+      placeType = category.name;
+    }
+    else if(!isTheCategoriesFunctionORNot && categories.some((c:any) => c?.title?.toLowerCase().includes(category.name.toLowerCase()))){
       placeType = category.name;
     }
   }
@@ -176,6 +186,8 @@ export const savedLocationsInDBParrelal = async (
 
   const place = placeArr?.join(',');
 
+  
+
   try {
     const mappedData = await locations?.map(item => {
       return {
@@ -202,9 +214,14 @@ export const savedLocationsInDBParrelal = async (
     });
     await Address.insertMany(mappedData);
 
-    kafkaProducer.sendMessage('addressUpdate', locations);
+    
+   await kafkaProducer.sendMessage('addressUpdate', locations);
+    console.log('add data in db');
+    
   } catch (error) {
     console.log(error);
+
+
   }
   return;
 };
@@ -213,10 +230,12 @@ export const addDetailsInExistingAddress = async (
   addresss: LocationInfo[],
   existData: boolean = true
 ) => {
+  await wikipedia.setUserAgent('VoyazenApp/1.0 (sharif@example.com)');
   const io = (global as any).io;
   for (const address of addresss) {
     try {
       //
+      
       if (!existData) {
         const exist = await Address.findOne({
           pageid: address.pageid,
@@ -235,7 +254,8 @@ export const addDetailsInExistingAddress = async (
           { new: true }
         ).lean();
       }
-      // make the whole thing using api of wikipedia
+
+      
       const page = await wikipedia.page(address.pageid as any as string);
       const summary = await page.summary();
 
@@ -257,7 +277,7 @@ export const addDetailsInExistingAddress = async (
         },
         { new: true }
       ).lean();
-      console.log('data', data);
+
 
       // elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
       kafkaProducer.sendMessage('updateDescription', data);
@@ -266,7 +286,32 @@ export const addDetailsInExistingAddress = async (
       await RedisHelper.keyDelete(`${data?._id}`);
       await redisClient.del(`${data?._id}`);
     } catch (error) {
-      console.log(error);
+      try {
+              console.log('start the work');
+      const page = await getCityByPageId(address.pageid as any as number);
+
+      console.log(page);
+      
+      /// \n \ and etc
+      console.log('start the work');
+      
+      const summary = page.extract?.replace(/\\n/g, ' ');
+      const category = await getGetCategory(page);
+      const images = [page.original?.source];
+
+     const data = await Address.findOneAndUpdate({pageid:address.pageid},{summary:summary,imageUrl:images,type:category},{new:true})
+      kafkaProducer.sendMessage('updateDescription', data);
+      io.emit('address', data);
+      await RedisHelper.keyDelete('address');
+      await RedisHelper.keyDelete(`${data?._id}`);
+      await redisClient.del(`${data?._id}`);
+      console.log(`done ${address.pageid} by api`);
+      
+      } catch (error) {
+        console.log(error);
+        
+      }
+     
     }
   }
 };
@@ -300,7 +345,7 @@ export const addShortDescription = async (
   address: IAddress & { _id: string }
 ) => {
   try {
-    console.log(address, 'address-----------------------------------');
+
 
     // const shortDescription = await generateAiContnents(address.summary!,100);
     // const longDescription = await generateAiContnents(address.summary!);

@@ -23,18 +23,18 @@ export function startWorker() {
     // run every 15 seconds
     cronJob.schedule("*/15 * * * * *", async () => {
   try {
-    console.log("Cron Job Runned");
+    // console.log("Cron Job Runned");
 
-    const finishedData = await Address.find({ summary: "" }).limit(1).lean();
-    console.log(finishedData);
+    // const finishedData = await Address.find({ summary: "" }).limit(1).lean();
+    // console.log(finishedData);
 
-    if (finishedData.length > 0) {
-      for (const data of finishedData) {
-        await AddressService.singleAaddressFromDB(data._id.toString());
-      }
-    }
+    // if (finishedData.length > 0) {
+    //   for (const data of finishedData) {
+    //     await AddressService.singleAaddressFromDB(data._id.toString());
+    //   }
+    // }
 
-    await addDetailsInExistingAddress(finishedData as any);
+    // await addDetailsInExistingAddress(finishedData as any);
     // const otherTypes = await Address.findOne({type:{$in:['','Other']}})
     // if(otherTypes){
     //   await addTypeInExistingAddress(otherTypes as any)

@@ -29,6 +29,7 @@ import { compressImageFromUrl } from '../../../helpers/comprass-icon';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
+
   if (!lat || !lon) return;
   const latlong = await geosearchEn(lat!, lon!);
 
