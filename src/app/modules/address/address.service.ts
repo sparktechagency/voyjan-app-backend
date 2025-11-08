@@ -251,7 +251,7 @@ async function createBackegroundDescription(address:any) {
 
 async function addmissingImages(address:IAddress&{_id:string}) {
 
-  const images = await getImagesFromApi(address.place);
+  const images = await getImagesFromApi(address.name);
   await Address.findOneAndUpdate({ _id: address._id }, {
     imageUrl: images,}, {
     new: true,
