@@ -233,9 +233,9 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     transltedAddress: address.diff_lang?.[lang]?.address||'',
   }
 
-  if(!Object.values(data).includes('')) {
-    await RedisHelper.redisSet(`${addressId}`,data,{lang:lang},1000000);
-  }
+
+    await RedisHelper.redisSet(`${addressId}`,data,{lang:lang},60);
+  
   return data
 }
 
