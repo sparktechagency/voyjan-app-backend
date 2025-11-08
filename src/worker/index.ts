@@ -24,7 +24,7 @@ export function startWorker() {
         try {
             console.log('Cron Job Runned');
             
-              const finishedData = await Address.find({imageUrl:{$size:0}}).limit(1).lean();
+              const finishedData = await Address.find({long_descreption:''}).limit(1).lean();
            console.log(finishedData);
            
            if(finishedData.length > 0){
