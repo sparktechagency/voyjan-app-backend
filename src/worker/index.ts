@@ -24,12 +24,11 @@ export function startWorker() {
         try {
             console.log('Cron Job Runned');
             
-              const finishedData = await Address.find({summary:''}).limit(1).lean();
+              const finishedData = await Address.find({summary:''}).limit(10).lean();
            console.log(finishedData);
            
            if(finishedData.length > 0){
-            await AddressService.singleAaddressFromDB(finishedData[0]._id as any);
-            console.log('finished by ai');
+            await Promise.all(finishedData.map((address: any) => AddressService.singleAaddressFromDB(address._id)))
            }
 
   
