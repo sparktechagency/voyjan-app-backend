@@ -114,6 +114,7 @@ const searchByLatlong = async (
   }
   const addresses = await Address.find({
     ...(type?.length ? { type: { $in: type } }: {}),
+    summary:{$ne:''},
     location: {
       $near: {
         $geometry: {

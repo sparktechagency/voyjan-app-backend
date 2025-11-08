@@ -1,6 +1,6 @@
 import cronJob from "node-cron"
 import { Address } from "../app/modules/address/address.model";
-import { addDetailsInExistingAddress } from "../helpers/wicki";
+import { addDetailsInExistingAddress, addTypeInExistingAddress } from "../helpers/wicki";
 import { AddressService } from "../app/modules/address/address.service";
 
 export function startWorker() {
@@ -21,17 +21,22 @@ export function startWorker() {
     });
 
     // run every 15 seconds
-    cronJob.schedule("*/5 * * * * *", async () => {
+    cronJob.schedule("*/2 * * * * *", async () => {
   try {
     console.log("Cron Job Runned");
 
-    const finishedData = await Address.find({ summary: "" }).limit(3).lean();
+    const finishedData = await Address.find({ summary: "" }).limit(1).lean();
     console.log(finishedData);
 
     if (finishedData.length > 0) {
       for (const data of finishedData) {
         await AddressService.singleAaddressFromDB(data._id.toString());
       }
+    }
+
+    const otherTypes = await Address.findOne({type:{$in:['','Other']}})
+    if(otherTypes){
+      await addTypeInExistingAddress(otherTypes as any)
     }
 
   } catch (error) {
