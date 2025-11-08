@@ -21,7 +21,7 @@ export function startWorker() {
     });
 
     // run every 15 seconds
-    cronJob.schedule("*/2 * * * * *", async () => {
+    cronJob.schedule("*/15 * * * * *", async () => {
   try {
     console.log("Cron Job Runned");
 
