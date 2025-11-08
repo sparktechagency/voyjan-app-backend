@@ -91,7 +91,7 @@ const addDataFromExcelSheet = async (pathData: string) => {
 
     const saved = await Address.create(address);
 
-    await elasticHelper.createIndex('address', saved._id.toString()!, address);
+    // await elasticHelper.createIndex('address', saved._id.toString()!, address);
     io.emit('add-address', saved?.name);
   }
 
@@ -219,7 +219,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     }
 
     address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'')
-    await elasticHelper.updateIndex('address', address._id.toString()!, address)
+    // await elasticHelper.updateIndex('address', address._id.toString()!, address)
     await RedisHelper.keyDelete(`${addressId}`);
     await redisClient.del(`${addressId}`);
   }
@@ -241,7 +241,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
 
 async function createBackegroundDescription(address:any) {
     address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.place,address.long_descreption)
-    await elasticHelper.updateIndex('address', address._id.toString()!, address)
+    // await elasticHelper.updateIndex('address', address._id.toString()!, address)
       await Address.findOneAndUpdate({ _id: address._id }, {
     diff_lang: address.diff_lang,}, {
     new: true,
@@ -256,7 +256,7 @@ async function addmissingImages(address:IAddress&{_id:string}) {
     imageUrl: images,}, {
     new: true,
   })
-  await elasticHelper.updateIndex('address', address._id.toString()!, address)
+  // await elasticHelper.updateIndex('address', address._id.toString()!, address)
   await RedisHelper.keyDelete(`${address._id}`);
   await redisClient.del(`${address._id}`)
   await RedisHelper.keyDelete(`address`);  
