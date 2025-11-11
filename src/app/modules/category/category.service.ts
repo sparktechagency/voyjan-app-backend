@@ -11,11 +11,6 @@ const createCategoryIntoDB = async (data:ICategory) => {
 };
 
 const getAllCategoryFromDB = async () => {
-    const cache = await RedisHelper.redisGet("category",{});
-    if(cache){
-      console.log('cache found');
-      return cache
-    }
     const categories = await Category.find({});
     await RedisHelper.redisSet('category',categories,{},1000000);
     return categories;
