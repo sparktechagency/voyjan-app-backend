@@ -219,7 +219,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
       addShortDescription(address as any)
     }
 
-    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'')
+    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'',lang)
     // await elasticHelper.updateIndex('address', address._id.toString()!, address)
     await RedisHelper.keyDelete(`${addressId}`);
     await redisClient.del(`${addressId}`);

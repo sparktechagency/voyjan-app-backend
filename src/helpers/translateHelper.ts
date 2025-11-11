@@ -19,15 +19,26 @@ async function textTranslationWithBing(
   type: string,
   address: string,
   longText?: string,
-  isError?: boolean
+  
+  isError?: boolean,
+  lag?:typeof language[0]["name"]
 ) {
   const languageTranslate: Record<
     string,
-    { translateText: string; title: string; type: string; address: string, translateLong: string }
+    { translateText: string; title: string; type: string; address: string, translateLong: string, }
   > = {};
-
+  let tag = language
+  if(lag){
+    const langInfo = language.filter(lang => lang.name === lag);
+    
+    if(langInfo.length){
+      tag = langInfo
+    }
+  }
+  console.log("tag",tag);
+  
   await Promise.all(
-    language.map(async lang => {
+    tag.map(async lang => {
       try {
         let lg = lang.code;
         if (lang.code === 'zh-CN') lg = 'zh-Hans';
@@ -68,7 +79,7 @@ async function textTranslationWithBing(
           return;
         }
 
-        await textTranslationWithGoogle(text, title, type, address, true);
+        await textTranslationWithGoogle(text, title, type, address, true, lag);
       }
     })
   );
@@ -81,16 +92,24 @@ async function textTranslationWithGoogle(
   title: string,
   type: string,
   address: string,
-  isError?: boolean
+  isError?: boolean,
+  lag?:typeof language[0]["name"]
 ) {
   console.log('translation started by Google');
+  let tag = language
+  if(lag){
+    const langInfo = language.filter(lang => lang.name === lag);
+    if(langInfo.length){
+      tag = langInfo
+    }
+  }
   const languageTranslate: Record<
     string,
     { translateText: string; title: string; type: string; address: string }
   > = {};
 
   await Promise.all(
-    language.map(async lang => {
+    tag.map(async lang => {
       try {
         const [translateText, translateTitle, translateType, translateAddress] =
           await Promise.all([
@@ -112,7 +131,7 @@ async function textTranslationWithGoogle(
           return;
         }
 
-        await textTranslationWithBing(text, title, type, address, '', true);
+        await textTranslationWithBing(text, title, type, address, '', true, lag);
       }
     })
   );
@@ -125,14 +144,21 @@ export async function translateLanguages(
   title: string,
   type: string,
   address: string,
-  longText?: string
+  longText?: string,
+  lang?: typeof language[0]["name"]
 ) {
   // Pick next provider in round-robin
   const provider = getNextProvider();
+  if(text && text.length>=1000){
+    text =text.slice(0, 900);
+  }
+  if(longText && longText.length>=1000){
+    longText =longText.slice(0, 900);
+  }
 
   const translator =
     provider === 'bing' ? textTranslationWithBing : textTranslationWithGoogle;
-  const data = textTranslationWithBing(text, title, type, address, longText);
+  const data = textTranslationWithBing(text, title, type, address, longText, false, lang);
 
   return data;
 }
