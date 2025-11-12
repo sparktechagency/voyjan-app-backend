@@ -35,7 +35,7 @@ export async function startWorker() {
           address:data?.diff_lang![key as any].address?.replace(/=/g, ''),
         }
        });
-        await Address.findOneAndUpdate({ _id: data._id }, { summary: summary, long_descreption: long_descreption }, { new: true });
+        await Address.findOneAndUpdate({ _id: data._id }, { summary: summary, long_descreption: long_descreption, diff_lang: diff_lang }, { new: true });
         console.log(`Cron Job Runned for ${data._id}`);
       }
     }
