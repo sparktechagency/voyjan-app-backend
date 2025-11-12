@@ -290,7 +290,7 @@ export const addDetailsInExistingAddress = async (
               console.log('start the work');
       const page = await getCityByPageId(address.pageid as any as number);
 
-      console.log(page);
+
       
       /// \n \ and etc
       console.log('start the work');
