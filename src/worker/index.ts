@@ -26,6 +26,15 @@ export async function startWorker() {
         //remove all = from summury field
         const summary = data.summary?.replace(/=/g, '');
         const long_descreption = data.long_descreption?.replace(/=/g, '');
+        let diff_lang = {...data?.diff_lang as any}
+       Object.keys(data?.diff_lang!).map((key) =>{
+        diff_lang[key]={
+          title:data?.diff_lang![key as any].title?.replace(/=/g, ''),
+          translateText:data?.diff_lang![key as any].translateText?.replace(/=/g, ''),
+          translateLong:data?.diff_lang![key as any].translateLong?.replace(/=/g, ''),
+          address:data?.diff_lang![key as any].address?.replace(/=/g, ''),
+        }
+       });
         await Address.findOneAndUpdate({ _id: data._id }, { summary: summary, long_descreption: long_descreption }, { new: true });
         console.log(`Cron Job Runned for ${data._id}`);
       }
