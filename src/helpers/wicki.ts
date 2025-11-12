@@ -294,8 +294,8 @@ export const addDetailsInExistingAddress = async (
       
       /// \n \ and etc
       console.log('start the work');
-      
-      const summary = page.extract?.replace(/\\n/g, ' ')?.slice(0, 900);
+      //replace all = from summary
+      const summary = page.extract?.replace(/=/g, '')?.replace(/\\n/g, '')?.slice(0, 900);
       const category = await getGetCategory(page);
       const images = [page.original?.source];
 
