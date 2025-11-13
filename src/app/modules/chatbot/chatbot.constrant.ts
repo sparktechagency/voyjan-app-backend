@@ -16,7 +16,7 @@ export function getPrompt(message:string,language:string="English",prevMessages?
 6. If the user asks something irrelevant to travel, politely redirect back to travel-related help.
 7. make the response plain dont use markdown and dont use icons
 8.read our previous conversation and analize the user input and make the response accordingly
-
+9.give response in 200 words
 ** give answer in ${language}**
 
 ** our previous conversation**
