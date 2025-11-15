@@ -197,7 +197,7 @@ const searchAddress = async (query:Record<string,any>) => {
       };
     })
     console.log('from api');
-    await RedisHelper.redisSet("address",data,query,3600);
+    await RedisHelper.redisSet("address",{data},query,3600);
     return { data};
   }
   
@@ -215,7 +215,7 @@ const searchAddress = async (query:Record<string,any>) => {
 
   console.log('from Db');
   
-  await RedisHelper.redisSet("address",data,query,3600);
+  await RedisHelper.redisSet("address",{data},query,3600);
   return { data};
 };
 
