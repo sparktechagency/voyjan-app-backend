@@ -180,9 +180,12 @@ const searchAddress = async (query:Record<string,any>) => {
   }
   const searchData = await elasticHelper.searchIndex('address', query.searchTerm, [
     'type',
-    'diff_lang.*.translateText',
-    'diff_lang.*.title',
-    'diff_lang.*.address',
+    // 'diff_lang.*.translateText',
+    // 'diff_lang.*.title',
+    // 'diff_lang.*.address',
+    "formattedAddress",
+    "name",
+    "type",
   ],query?.page,query?.limit);
 
   if(!searchData?.data?.length) {
