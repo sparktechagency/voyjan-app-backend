@@ -52,7 +52,11 @@ export async function startWorker() {
       ]
     }).flat()
 
-   await esClient.bulk({ body: mapAddress });
+   const CHUNK_SIZE = 1000;
+    for (let i = 0; i < mapAddress.length; i += CHUNK_SIZE) {
+      const chunk = mapAddress.slice(i, i + CHUNK_SIZE);
+      await esClient.bulk({ body: chunk });
+    }
     
 
     // console.log('done');
