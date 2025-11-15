@@ -35,13 +35,13 @@ export function startWorker() {
     //   }
     // }
 
-    const allAddresss = await Address.find({}).lean();
+    // const allAddresss = await Address.find({}).lean();
 
-    for (const data of allAddresss) {
-       await elasticHelper.createIndex('address',data?._id.toString()!,{...data,diff_lang:data?.diff_lang||{demo:"demo"}});
-    }
+    // for (const data of allAddresss) {
+    //    await elasticHelper.createIndex('address',data?._id.toString()!,{...data,diff_lang:data?.diff_lang||{demo:"demo"}});
+    // }
 
-    console.log('done');
+    // console.log('done');
     
     // await addDetailsInExistingAddress(finishedData as any);
     // const otherTypes = await Address.findOne({type:{$in:['','Other']}})
