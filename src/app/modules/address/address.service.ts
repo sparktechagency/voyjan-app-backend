@@ -196,7 +196,10 @@ const searchAddress = async (query:Record<string,any>) => {
         lon: address?.geometry?.coordinates[0],
       };
     })
-    console.log('from api');
+    if(query?.searchTerm?.length>2) {
+      createAddressIntoDB(query.searchTerm);
+      
+    }
     await RedisHelper.redisSet("address",{data},query,3600);
     return { data};
   }
