@@ -86,7 +86,6 @@ const searchAddress = catchAsync(async (req:Request,res:Response) => {
         success: true,
         message: "Address deleted successfully",
         data: createdAddress?.data,
-        pagination: createdAddress?.pagination as any,
         statusCode: 200,
     });
 })

@@ -26,6 +26,7 @@ import { redisClient } from '../../../config/redis.client';
 import { getImagesFromApi } from '../../../helpers/imageHelper';
 import { add } from 'winston';
 import { compressImageFromUrl } from '../../../helpers/comprass-icon';
+import { getAutoCompleteFromApi } from '../../../helpers/thirdPartyHelper';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -172,22 +173,50 @@ const deleteAddress = async (addressId: string) => {
 };
 
 const searchAddress = async (query:Record<string,any>) => {
+  const cache = await RedisHelper.redisGet("address",query);
+  if(cache) {
+    console.log('cache found');
+    return cache 
+  }
   const searchData = await elasticHelper.searchIndex('address', query.searchTerm, [
     'type',
     'diff_lang.*.translateText',
     'diff_lang.*.title',
     'diff_lang.*.address',
   ],query?.page,query?.limit);
+
+  if(!searchData?.data?.length) {
+    const apiData = await getAutoCompleteFromApi(query.searchTerm)
+    const data = apiData?.features?.map((address) => {
+      return {
+        name: address?.properties?.name,
+        type: address?.properties?.type,
+        formattedAddress: `${address?.properties?.name}, ${address?.properties?.state}, ${address?.properties?.country}`,
+        lat: address?.geometry?.coordinates[1],
+        lon: address?.geometry?.coordinates[0],
+      };
+    })
+    console.log('from api');
+    await RedisHelper.redisSet("address",data,query,3600);
+    return { data};
+  }
   
   const data = searchData?.data?.map((address: any) => {
     delete (address._source as any)?.diff_lang
     return {
-      ...(address?._source || {}),
+      name: address._source.name,
+      type: address._source.type,
+      formattedAddress: address._source.formattedAddress,
+      lat: address._source.latitude,
+      lon: address._source.longitude,
       _id: address?._id,
     };
   });
 
-  return { data, pagination: searchData?.pagination };
+  console.log('from Db');
+  
+  await RedisHelper.redisSet("address",data,query,3600);
+  return { data};
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
