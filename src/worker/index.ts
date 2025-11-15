@@ -3,8 +3,9 @@ import { Address } from "../app/modules/address/address.model";
 import { addDetailsInExistingAddress, addTypeInExistingAddress } from "../helpers/wicki";
 import { AddressService } from "../app/modules/address/address.service";
 import { elasticHelper } from "../handlers/elasticSaveData";
+import { esClient } from "../config/elasticSearch.config";
 
-export function startWorker() {
+export async function startWorker() {
     // cronJob.schedule("*/5 * * * *",async () => {
     //     try {
     //         console.log('Cron Job Runned');
@@ -22,7 +23,7 @@ export function startWorker() {
     // });
 
     // run every 15 seconds
-    cronJob.schedule("*/5 * * * * *", async () => {
+    // cronJob.schedule("*/5 * * * * *", async () => {
   try {
     // console.log("Cron Job Runned");
 
@@ -35,11 +36,24 @@ export function startWorker() {
     //   }
     // }
 
-    // const allAddresss = await Address.find({}).lean();
+    const allAddresss = await Address.find({}).lean().exec();
 
-    // for (const data of allAddresss) {
-    //    await elasticHelper.createIndex('address',data?._id.toString()!,{...data,diff_lang:data?.diff_lang||{demo:"demo"}});
-    // }
+    const mapAddress = allAddresss.map((address) => {
+      let tempData = { ...address };
+      delete (tempData as any)._id
+      return [
+        {
+          index: {
+            _index: "address",
+            _id: address._id?.toString(),
+          },
+        },
+        tempData,
+      ]
+    }).flat()
+
+   await esClient.bulk({ body: mapAddress });
+    
 
     // console.log('done');
     
@@ -54,5 +68,5 @@ export function startWorker() {
   } catch (error) {
     console.log(error);
   }
-});
+// });
 }
