@@ -53,10 +53,10 @@ const searchIndex = async (
     });
 
     const pagination= {
-      total: response?.hits?.total,   // total matched documents
+      total: (response?.hits?.total as any)?.value,   // total matched documents
       page: page,
       limit: limit,
-      totalPage: Math.ceil((response?.hits?.total as number||0) / limit),
+      totalPage: Math.ceil(((response?.hits?.total as any)?.value||0) / limit),
     };
 
     return { data: response?.hits?.hits, pagination };
