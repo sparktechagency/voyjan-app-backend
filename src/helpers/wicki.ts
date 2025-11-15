@@ -279,7 +279,7 @@ export const addDetailsInExistingAddress = async (
       ).lean();
 
 
-      // elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
+      elasticHelper.createIndex('address',data?._id.toString()!,{...data,diff_lang:data?.diff_lang||{demo:"demo"}});
       kafkaProducer.sendMessage('updateDescription', data);
       io.emit('address', data);
       await RedisHelper.keyDelete('address');
@@ -300,6 +300,7 @@ export const addDetailsInExistingAddress = async (
       const images = [page.original?.source];
 
      const data = await Address.findOneAndUpdate({pageid:address.pageid},{summary:summary,imageUrl:images,type:category},{new:true})
+     elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
       kafkaProducer.sendMessage('updateDescription', data);
       io.emit('address', data);
       await RedisHelper.keyDelete('address');
@@ -361,7 +362,7 @@ export const addShortDescription = async (
       { new: true }
     );
 
-    // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
+    elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
 
     kafkaProducer.sendMessage('updateType', data);
     await RedisHelper.keyDelete(`${address._id}`);
@@ -444,7 +445,7 @@ export const addTypeInExistingAddress = async (
       { type: type },
       { new: true }
     );
-    // elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
+    elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
     await RedisHelper.keyDelete(`${address._id}`);
     await redisClient.del(`${address._id}`);
   } catch (error) {
