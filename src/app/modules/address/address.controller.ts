@@ -81,11 +81,12 @@ const getAllAddress = catchAsync(async (req:Request,res:Response) => {
 })
 
 const searchAddress = catchAsync(async (req:Request,res:Response) => {
-    const createdAddress = await AddressService.searchAddress(req.query.address as string);
+    const createdAddress = await AddressService.searchAddress(req.query);
     sendResponse(res, {
         success: true,
         message: "Address deleted successfully",
-        data: createdAddress,
+        data: createdAddress?.data,
+        pagination: createdAddress?.pagination as any,
         statusCode: 200,
     });
 })

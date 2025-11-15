@@ -171,15 +171,15 @@ const deleteAddress = async (addressId: string) => {
   return address;
 };
 
-const searchAddress = async (address: string) => {
-  const searchData = await elasticHelper.searchIndex('address', address, [
+const searchAddress = async (query:Record<string,any>) => {
+  const searchData = await elasticHelper.searchIndex('address', query.searchTerm, [
     'type',
     'diff_lang.*.translateText',
     'diff_lang.*.title',
     'diff_lang.*.address',
-  ]);
+  ],query?.page,query?.limit);
   
-  const data = searchData?.map(address => {
+  const data = searchData?.data?.map((address: any) => {
     delete (address._source as any)?.diff_lang
     return {
       ...(address?._source || {}),
@@ -187,7 +187,7 @@ const searchAddress = async (address: string) => {
     };
   });
 
-  return data;
+  return { data, pagination: searchData?.pagination };
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
@@ -220,7 +220,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
     }
 
     address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'',lang)
-    // await elasticHelper.updateIndex('address', address._id.toString()!, address)
+    await elasticHelper.updateIndex('address', address._id.toString()!, address)
     await RedisHelper.keyDelete(`${addressId}`);
     await redisClient.del(`${addressId}`);
   }

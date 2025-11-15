@@ -29,36 +29,43 @@ const createIndex = async <T>(indexName: string, id: string, data: T) => {
 
 const searchIndex = async (
   indexName: string,
-  query: any,
-  fields?: string[]
+  query: string,
+  fields?: string[],
+  page: number = 1,
+  limit: number = 10
 ) => {
   try {
+    const from = (page - 1) * limit;
+
     const response = await esClient.search({
       index: indexName.toLowerCase(),
+      from: from,
+      size: limit,
       body: {
         query: {
           multi_match: {
             query: query,
-            fields: fields?.length ? fields : ['*'],
-            fuzziness: 'AUTO',
+            fields: fields?.length ? fields : ["*"],
+            fuzziness: "AUTO",
           },
-        } as any,
-        // highlight: {
-        //   pre_tags: ['<em>'],
-        //   post_tags: ['</em>'],
-        //   require_field_match: false,
-        //   fields: {
-        //     "place": {},
-        //   },
-        // },
+        },
       },
     });
 
-    return response.hits.hits;
+    const pagination= {
+      total: response?.hits?.total,   // total matched documents
+      page: page,
+      limit: limit,
+      totalPage: Math.ceil((response?.hits?.total as number||0) / limit),
+    };
+
+    return { data: response?.hits?.hits, pagination };
   } catch (error) {
     console.log(error);
+    return null;
   }
 };
+
 
 const updateIndex = async <T>(indexName: string, id: string, data: T) => {
   try {
