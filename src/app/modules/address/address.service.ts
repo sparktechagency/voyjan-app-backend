@@ -173,6 +173,7 @@ const deleteAddress = async (addressId: string) => {
 };
 
 const searchAddress = async (query:Record<string,any>) => {
+  if (query?.searchTerm?.length < 2) return [];
   const cache = await RedisHelper.redisGet("address",query);
   if(cache) {
     console.log('cache found');
