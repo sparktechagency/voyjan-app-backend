@@ -46,8 +46,7 @@ const searchIndex = async (
           multi_match: {
             query: query,
             fields: fields?.length ? fields : ["*"],
-            fuzziness: 1,
-            minimum_should_match: "75%"
+            fuzziness: "AUTO",
           },
         },
       },

@@ -183,9 +183,8 @@ const searchAddress = async (query:Record<string,any>) => {
     // 'diff_lang.*.translateText',
     // 'diff_lang.*.title',
     // 'diff_lang.*.address',
-    "formattedAddress",
+    // "formattedAddress",
     "name",
-    "type",
   ],query?.page,query?.limit);
 
   if(!searchData?.data?.length) {
@@ -194,7 +193,7 @@ const searchAddress = async (query:Record<string,any>) => {
       return {
         name: address?.properties?.name,
         type: address?.properties?.type,
-        formattedAddress: `${address?.properties?.name}, ${address?.properties?.state}, ${address?.properties?.country}`,
+        formattedAddress: `${address?.properties?.name}, ${address?.properties?.state || ''}, ${address?.properties?.country}`,
         lat: address?.geometry?.coordinates[1],
         lon: address?.geometry?.coordinates[0],
       };
