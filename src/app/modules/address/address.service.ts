@@ -92,6 +92,7 @@ const addDataFromExcelSheet = async (pathData: string) => {
 
 
   await Address.insertMany(addresses);
+  io.emit('address', {title:'completed'});
 
   return;
 };
