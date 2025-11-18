@@ -126,6 +126,7 @@ export const getFromOSM = async (address: string) => {
     
     const data: any = await res.json();
 
+
     
     
     return {

@@ -35,7 +35,7 @@ async function textTranslationWithBing(
       tag = langInfo
     }
   }
-  console.log("tag",tag);
+
   
   await Promise.all(
     tag.map(async lang => {

@@ -43,7 +43,7 @@ const { latitude: lat, longitude: lon, place } = await getFromOSM(address.name);
 
 
   if (!lat || !lon) return;
-  const latlong = await geosearchEn(lat!, lon!,1000,1);
+  const latlong = await geosearchEn(lat!, lon!,100,10,true,address.name);
 
   console.log(latlong);
   
@@ -58,7 +58,8 @@ const addDataFromExcelSheet = async (pathData: string) => {
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
-
+  console.log(sheet);
+  
   // Convert to IAddress format
   const addresses = await Promise.all(
     sheet.map(async row => ({
@@ -66,10 +67,10 @@ const addDataFromExcelSheet = async (pathData: string) => {
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
       place: row.place,
-      formattedAddress: row.formattedAddress,
+      formattedAddress: row['formatted address'],
       imageUrl: row.imageUrl ? String(row.imageUrl).split(',') : [],
       summary: row.summary || undefined,
-      type: row.type || undefined,
+      type: row.type || row?.place,
       city: row.city || undefined,
       state: row.state || undefined,
       country: row.country || undefined,
@@ -78,24 +79,11 @@ const addDataFromExcelSheet = async (pathData: string) => {
         type: 'Point',
         coordinates: [Number(row.longitude), Number(row.latitude)],
       },
-      diff_lang: await translateLanguages(
-        row.summary!,
-        row.name,
-        row.type!,
-        row.formattedAddress
-      ),
     }))
   );
-  const io = (global as any).io as Server;
-
-  for (const address of addresses) {
 
 
-    const saved = await Address.create(address);
-
-    // await elasticHelper.createIndex('address', saved._id.toString()!, address);
-    io.emit('add-address', saved?.name);
-  }
+  await Address.insertMany(addresses);
 
   return;
 };

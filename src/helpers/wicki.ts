@@ -20,7 +20,9 @@ export const geosearchEn = async (
   lat: number,
   lon: number,
   radius = 10000,
-  limit = 200
+  limit = 200,
+  isSingle = false,
+  address?: string
 ): Promise<any[]> => {
   const params = {
     action: 'query',
@@ -40,7 +42,10 @@ export const geosearchEn = async (
 
   
 
-  return res.data.query?.geosearch || [];
+
+  
+
+  return !isSingle ? res.data.query?.geosearch || [] : res.data.query?.geosearch?.filter((item:any)=>item?.title?.includes(address) && item?.title?.length <= address?.length!)||[];
 };
 
 export const savedLocationsInDB = async (
@@ -452,3 +457,5 @@ export const addTypeInExistingAddress = async (
     console.log(error);
   }
 };
+
+
