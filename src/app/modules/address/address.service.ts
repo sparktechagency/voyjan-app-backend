@@ -40,6 +40,10 @@ const createAddressIntoDB = async (address: string) => {
 };
 
 const createAddressSingleIntoDB = async (address: IAddress) => {
+  const isExist = await Address.findOne({ name: address.name });
+  if (isExist){
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Address already exist');
+  }
 const { latitude: lat, longitude: lon, place } = await getFromOSM(address.name);
 
 
