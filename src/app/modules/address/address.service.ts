@@ -27,6 +27,7 @@ import { getImagesFromApi } from '../../../helpers/imageHelper';
 import { add } from 'winston';
 import { compressImageFromUrl } from '../../../helpers/comprass-icon';
 import { getAutoCompleteFromApi } from '../../../helpers/thirdPartyHelper';
+import { getCitySummary } from '../../../helpers/cityHelper';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -58,18 +59,20 @@ const addDataFromExcelSheet = async (pathData: string) => {
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
-  console.log(sheet);
+  const io = (global as any).io as Server
   
   // Convert to IAddress format
   const addresses = await Promise.all(
-    sheet.map(async row => ({
-      name: row.name,
-      latitude: Number(row.latitude),
-      longitude: Number(row.longitude),
-      place: row.place,
+    sheet.map(async row =>{
+      const getWikiData =await getCitySummary(row?.name)
+      const data = {
+      name: getWikiData?.title || row.name,
+      latitude: getWikiData?.coordinates?.lat || Number(row.latitude),
+      longitude: getWikiData?.coordinates?.lon || Number(row.longitude),
+      place: getWikiData?.title || row.name,
       formattedAddress: row['formatted address'],
-      imageUrl: row.imageUrl ? String(row.imageUrl).split(',') : [],
-      summary: row.summary || undefined,
+      imageUrl: row.imageUrl ? String(row.imageUrl).split(',') : [getWikiData?.thumbnail?.source || ''],
+      summary:getWikiData?.extract || '',
       type: row.type || row?.place,
       city: row.city || undefined,
       state: row.state || undefined,
@@ -77,9 +80,14 @@ const addDataFromExcelSheet = async (pathData: string) => {
       postalCode: row.postalCode || undefined,
       location: {
         type: 'Point',
-        coordinates: [Number(row.longitude), Number(row.latitude)],
+        coordinates: [getWikiData?.coordinates?.lon || Number(row.longitude), getWikiData?.coordinates?.lat || Number(row.latitude)],
       },
-    }))
+      pageId:getWikiData?.pageid || 0
+    }
+    io.emit('address', data);
+    return data
+    }
+  )
   );
 
 

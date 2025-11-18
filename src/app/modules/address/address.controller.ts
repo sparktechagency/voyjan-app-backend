@@ -28,11 +28,11 @@ const saveSingleAddress = catchAsync(async (req:Request,res:Response) => {
 
 const saveSheetAddress = catchAsync(async (req:Request,res:Response) => {
     const doc = getSingleFilePath(req.files, 'doc');
-    const createdAddress = await AddressService.addDataFromExcelSheet(doc!);
+    await kafkaProducer.sendMessage('csv', doc);
     sendResponse(res, {
         success: true,
         message: "Address created successfully",
-        data: createdAddress,
+        data: doc,
         statusCode: 200,
     });
 })

@@ -81,10 +81,22 @@ export interface WikiPage {
 import axios from "axios";
 
 export async function getCitySummary(city: string): Promise<WikipediaSummary> {
-  const res = await axios.get<WikipediaSummary>(
-    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`
+  try {
+    const res = await axios.get<WikipediaSummary>(
+    `https://en.wikipedia.org/api/rest_v1/page/summary/${city}`,
+    {
+      headers: {
+        'User-Agent': 'VoyazenApp/1.0 (sharif@example.com)',
+      },
+    }
   );
   return res.data;
+  } catch (error:any) {
+    console.log(error?.response?.data);
+
+    return {} as WikipediaSummary
+    
+  }
 }
 
 export async function getCityByPageId(pageid: number): Promise<WikiPage> {

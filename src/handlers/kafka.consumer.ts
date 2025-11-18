@@ -135,9 +135,34 @@ export const updateTypeConsumer = async () => {
 }
 
 
+export const handleCsvConsumer = async () => {
+    try {
+    const consumer = kafka.consumer({ groupId: "csv" });
+    await consumer.connect();
+    await consumer.subscribe({ topic: "csv", fromBeginning: true });
+    await consumer.run({ eachBatch: async ({ batch, heartbeat,resolveOffset, commitOffsetsIfNecessary }) => {
+
+        batch.messages.forEach(async (message) => {
+            const data = JSON.parse(message.value?.toString() as string);
+            await AddressService.addDataFromExcelSheet(data);
+            resolveOffset(message.offset)
+        });
+        await commitOffsetsIfNecessary();
+
+        heartbeat();
+
+    } });
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
+
 export const kafkaConsumer = async () =>{
     await addressConsumer();
     await addressUpdateConsumer();
     await updateDescriptionConsumer();
     await updateTypeConsumer();
+    await handleCsvConsumer()
 }
