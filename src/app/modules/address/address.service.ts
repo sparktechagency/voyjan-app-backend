@@ -40,19 +40,31 @@ const createAddressIntoDB = async (address: string) => {
 };
 
 const createAddressSingleIntoDB = async (address: IAddress) => {
-  const isExist = await Address.findOne({ name: address.name });
-  if (isExist){
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Address already exist');
+
+  const details = await getCitySummary(address.name)
+  const data = {
+    name: details?.title || address.name,
+    latitude: details?.coordinates?.lat || address.latitude,
+    longitude: details?.coordinates?.lon || address.longitude,
+    place: details?.title || address.name,
+    formattedAddress: address.name,
+    imageUrl: address.imageUrl ? String(address.imageUrl).split(',') : [details?.thumbnail?.source || ''],
+    summary:details?.extract || '',
+    type: address.type || address?.place,
+    city: address.city || undefined,
+    state: address.state || undefined,
+    country: address.country || undefined,
+    postalCode: address.postalCode || undefined,
+    location: {
+      type: 'Point',
+      coordinates: [details?.coordinates?.lon || address.longitude, details?.coordinates?.lat || address.latitude], // lng, lat
+    },
+    pageid: details?.pageid
   }
-const { latitude: lat, longitude: lon, place } = await getFromOSM(address.name);
-
-
-  if (!lat || !lon) return;
-  const latlong = await geosearchEn(lat!, lon!,100,10,true,address.name);
-
-  console.log(latlong);
-  
-  await savedLocationsInDBParrelal(latlong, place);
+  await Address.create(data)
+   addDetailsInExistingAddress([data as any])
+   const io = (global as any).io as Server
+   io.emit('address', data)
   return;
 };
 

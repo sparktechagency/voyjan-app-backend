@@ -4,6 +4,9 @@ import { AddressService } from "./address.service";
 import sendResponse from "../../../shared/sendResponse";
 import { getSingleFilePath } from "../../../shared/getFilePath";
 import { kafkaProducer } from "../../../handlers/kafka.producer";
+import { Address } from "./address.model";
+import ApiError from "../../../errors/ApiError";
+import { StatusCodes } from "http-status-codes";
 
 const createAddress = catchAsync(async (req:Request,res:Response) => {
     await kafkaProducer.sendMessage('address', req.body?.address);
@@ -16,12 +19,14 @@ const createAddress = catchAsync(async (req:Request,res:Response) => {
 })
 
 const saveSingleAddress = catchAsync(async (req:Request,res:Response) => {
-
-    const createdAddress = await AddressService.createAddressSingleIntoDB(req.body);
+      const isExist = await Address.findOne({ name: req.body.name });
+      if (isExist){
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Address already exist');
+      }
+    await kafkaProducer.sendMessage('singleAddress', req.body);
     sendResponse(res, {
         success: true,
         message: "Address created successfully",
-        data: createdAddress,
         statusCode: 200,
     });
 })

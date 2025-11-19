@@ -231,7 +231,7 @@ export const savedLocationsInDBParrelal = async (
   return;
 };
 
-export const addDetailsInExistingAddress = async (
+export const  addDetailsInExistingAddress = async (
   addresss: LocationInfo[],
   existData: boolean = true
 ) => {
