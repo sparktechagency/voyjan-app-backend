@@ -42,6 +42,7 @@ const createAddressIntoDB = async (address: string) => {
 const createAddressSingleIntoDB = async (address: IAddress) => {
 
   const details = await getCitySummary(address.name)
+  if(!details) return
   const data = {
     name: details?.title || address.name,
     latitude: details?.coordinates?.lat || address.latitude,
@@ -61,7 +62,10 @@ const createAddressSingleIntoDB = async (address: IAddress) => {
     },
     pageid: details?.pageid
   }
-  await Address.create(data)
+  console.log(data);
+  
+ const addresss = await Address.create(data)
+   if(!addresss) return
    addDetailsInExistingAddress([data as any])
    const io = (global as any).io as Server
    io.emit('address', data)
