@@ -40,8 +40,8 @@ const createAddressIntoDB = async (address: string) => {
 };
 
 const createAddressSingleIntoDB = async (address: IAddress) => {
-
-  const details = await getCitySummary(address.name)
+  try {
+     const details = await getCitySummary(address.name)
   if(!details?.pageid) return
   const data = {
     name: details?.title || address.name,
@@ -69,11 +69,15 @@ const createAddressSingleIntoDB = async (address: IAddress) => {
    const io = (global as any).io as Server
    io.emit('address', data)
   return;
+  } catch (error) {
+    console.log(error);
+    
+  }
 };
 
 const addDataFromExcelSheet = async (pathData: string) => {
-  // Parse Excel
-
+try {
+  
   const filePath = path.join(process.cwd(), 'uploads', pathData);
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
@@ -114,6 +118,10 @@ const addDataFromExcelSheet = async (pathData: string) => {
   io.emit('address', {title:'completed'});
 
   return;
+} catch (error) {
+  console.log(error);
+  
+}
 };
 
 const searchByLatlong = async (
