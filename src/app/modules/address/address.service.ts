@@ -323,6 +323,14 @@ async function addmissingImages(address:IAddress&{_id:string}) {
   console.log('images added');
 }
 
+
+
+const addressBulkDelete = async (addressIds: string[]) => {
+  const address = await Address.deleteMany({ _id: { $in: addressIds } });
+  return address;
+};
+
+
 export const AddressService = {
   createAddressIntoDB,
   createAddressSingleIntoDB,
@@ -332,5 +340,6 @@ export const AddressService = {
   updateAddress,
   deleteAddress,
   searchAddress,
-  singleAaddressFromDB
+  singleAaddressFromDB,
+  addressBulkDelete,
 };

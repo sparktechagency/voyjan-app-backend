@@ -106,7 +106,18 @@ const getSingleAddress = catchAsync(async (req:Request,res:Response) => {
     });
 })
 
-
+const deleteBulkAddress = catchAsync(async (req:Request,res:Response) => {
+    if(!req.body?.ids?.length){
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'ids is required');
+    }
+    const createdAddress = await AddressService.addressBulkDelete(req.body?.ids);
+    sendResponse(res, {
+        success: true,
+        message: "Address deleted successfully",
+        data: createdAddress,
+        statusCode: 200,
+    });
+})
 
 export const AddressController = {
     createAddress,
@@ -117,5 +128,6 @@ export const AddressController = {
     deleteAddress,
     getAllAddress,
     searchAddress,
-    getSingleAddress
+    getSingleAddress,
+    deleteBulkAddress
 }
