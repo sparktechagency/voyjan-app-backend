@@ -5,8 +5,6 @@ import { Category } from "./category.model";
 
 const createCategoryIntoDB = async (data:ICategory) => {
     const category = await Category.create(data);
-    await RedisHelper.keyDelete('category');
-    await redisClient.del('category');
     return category;
 };
 
@@ -19,15 +17,11 @@ const updateCategoryIntoDB = async (id: string, data: ICategory) => {
     const category = await Category.findOneAndUpdate({ _id: id }, data, {
         new: true,
     });
-    await RedisHelper.keyDelete('category');
-    await redisClient.del('category');
     return category;
 };
 
 const deleteCategoryFromDB = async (id: string) => {
     const category = await Category.findOneAndDelete({ _id: id });
-    await RedisHelper.keyDelete('category');
-    await redisClient.del('category');
     return category;
 };
 
