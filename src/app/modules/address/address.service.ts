@@ -15,7 +15,7 @@ import XLSX from 'xlsx';
 import { Address } from './address.model';
 import path from 'path';
 import QueryBuilder from '../../builder/QueryBuilder';
-import { translateLanguages } from '../../../helpers/translateHelper';
+import { singleTextTranslationWithLibre, translateLanguages } from '../../../helpers/translateHelper';
 import { Server } from 'socket.io';
 import { elasticHelper } from '../../../handlers/elasticSaveData';
 import ApiError from '../../../errors/ApiError';
@@ -278,7 +278,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
       addShortDescription(address as any)
     }
 
-    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'',lang)
+    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.formattedAddress,address.long_descreption||address.summary||'',lang) as any
     await elasticHelper.updateIndex('address', address._id.toString()!, address)
     await RedisHelper.keyDelete(`${addressId}`);
     await redisClient.del(`${addressId}`);
@@ -330,6 +330,10 @@ const addressBulkDelete = async (addressIds: string[]) => {
   return address;
 };
 
+const translateSingleText = async (text:string) => {
+  const data = await singleTextTranslationWithLibre(text,'en');
+  return data
+}
 
 export const AddressService = {
   createAddressIntoDB,
@@ -342,4 +346,5 @@ export const AddressService = {
   searchAddress,
   singleAaddressFromDB,
   addressBulkDelete,
+  translateSingleText
 };

@@ -119,6 +119,16 @@ const deleteBulkAddress = catchAsync(async (req:Request,res:Response) => {
     });
 })
 
+const singleTextTranslate = catchAsync(async (req:Request,res:Response) => {
+    const createdAddress = await AddressService.translateSingleText(req.body?.text);
+    sendResponse(res, {
+        success: true,
+        message: "Address deleted successfully",
+        data: createdAddress,
+        statusCode: 200,
+    });
+})
+
 export const AddressController = {
     createAddress,
     saveSingleAddress,
@@ -129,5 +139,6 @@ export const AddressController = {
     getAllAddress,
     searchAddress,
     getSingleAddress,
-    deleteBulkAddress
+    deleteBulkAddress,
+    singleTextTranslate
 }

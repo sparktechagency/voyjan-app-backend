@@ -7,7 +7,6 @@ export const language = [
   { "code": "zh-TW", "name": "Chinese (Traditional)" },
   { "code": "hu", "name": "Hungarian" },
   { "code": "sw", "name": "Swahili" },
-  { "code": "ks", "name": "Kashmiri" },
   { "code": "th", "name": "Thai" },
   { "code": "ur", "name": "Urdu" },
   { "code": "nb", "name": "Norwegian Bokmål" },

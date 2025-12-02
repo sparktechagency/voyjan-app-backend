@@ -8,6 +8,6 @@ router.post("/sheet", fileUploadHandler(), AddressController.saveSheetAddress);
 router.get("/search-address", AddressController.searchAddress);
 router.get("/search", AddressController.searchPlaces);
 router.post("/bulk-delete", AddressController.deleteBulkAddress);
-
+router.post("/translate", AddressController.singleTextTranslate);
 router.route("/:id").patch(AddressController.updateAddress).delete(AddressController.deleteAddress).get(AddressController.getSingleAddress);
 export const AddressRoutes = router;

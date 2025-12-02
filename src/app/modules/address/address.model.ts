@@ -32,6 +32,10 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
     },
     isCompleted:{type:Boolean,required:false,default:false},
     pageid:{type:Number,required:false},
+    address_add:{
+        type:Boolean,
+        default:false
+    }
 },{
     timestamps: true
 });

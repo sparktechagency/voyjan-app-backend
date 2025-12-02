@@ -1,6 +1,6 @@
 import { AddressService } from "../app/modules/address/address.service";
 import kafka from "../config/kafka.config";
-import { addDetailsInExistingAddress, addLanguagesInExistingAddress, addShortDescription, addTypeInExistingAddress } from "../helpers/wicki";
+import { addDetailsInExistingAddress, addLanguagesInExistingAddress, addLongDescription, addShortDescription, addTypeInExistingAddress } from "../helpers/wicki";
 
 export const addressConsumer = async () => {
     try {
@@ -93,7 +93,7 @@ export const updateDescriptionConsumer = async () => {
             const data = JSON.parse(message.value?.toString() as string);
  
             
-            await addShortDescription(data)
+            await addLongDescription()
             
             resolveOffset(message.offset)
         });

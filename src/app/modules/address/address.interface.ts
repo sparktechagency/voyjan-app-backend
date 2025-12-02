@@ -22,6 +22,8 @@ export type IAddress = {
         coordinates: number[]
     },
     diff_lang?:Record<string, {translateText: string,title:string,type:string,address:string,translateLong:string}>
+
+    address_add?:boolean
 };
 
 

@@ -9,7 +9,7 @@ import { translateLanguages } from './translateHelper';
 import { elasticHelper } from '../handlers/elasticSaveData';
 import { kafkaProducer } from '../handlers/kafka.producer';
 import { Category } from '../app/modules/category/category.model';
-import { generateAiContnents, getTheTypeUsingAI } from './generateDescriptions';
+import { generateAiContnents, getLongDescriptionUsingAI, getTheTypeUsingAI } from './generateDescriptions';
 import config from '../config';
 import { RedisHelper } from './redisHelper';
 import { redisClient } from '../config/redis.client';
@@ -20,7 +20,7 @@ export const geosearchEn = async (
   lat: number,
   lon: number,
   radius = 10000,
-  limit = 200,
+  limit = 50,
   isSingle = false,
   address?: string
 ): Promise<any[]> => {
@@ -285,7 +285,7 @@ export const  addDetailsInExistingAddress = async (
 
 
       elasticHelper.createIndex('address',data?._id.toString()!,{...data,diff_lang:data?.diff_lang||{demo:"demo"}});
-      kafkaProducer.sendMessage('updateDescription', data);
+      // kafkaProducer.sendMessage('updateDescription', data);
       io.emit('address', data);
       await RedisHelper.keyDelete('address');
       await RedisHelper.keyDelete(`${data?._id}`);
@@ -304,13 +304,14 @@ export const  addDetailsInExistingAddress = async (
       const category = await getGetCategory(page);
       const images = [page.original?.source];
 
-     const data = await Address.findOneAndUpdate({pageid:address.pageid},{summary:summary,imageUrl:images,type:category},{new:true})
+     const data = await Address.findOneAndUpdate({pageid:address.pageid},{summary:summary,imageUrl:images,type:category,long_descreption:summary},{new:true})
      elasticHelper.createIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
-      kafkaProducer.sendMessage('updateDescription', data);
+      
       io.emit('address', data);
       await RedisHelper.keyDelete('address');
       await RedisHelper.keyDelete(`${data?._id}`);
       await redisClient.del(`${data?._id}`);
+      
       console.log(`done ${address.pageid} by api`);
       
       } catch (error) {
@@ -320,6 +321,7 @@ export const  addDetailsInExistingAddress = async (
      
     }
   }
+  // kafkaProducer.sendMessage('updateDescription', {});
 };
 
 export const addLanguagesInExistingAddress = async (
@@ -458,7 +460,26 @@ export const addTypeInExistingAddress = async (
   }
 };
 
+export const addLongDescription = async () => {
+  const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(50).lean();
+  
+  const data = await getLongDescriptionUsingAI(alladdress)
+  
+  await Promise.all(data.map(async (address) => {
+    const data = await Address.findOneAndUpdate(
+      { _id: address._id },
+      { long_descreption: address.long_descreption, summary: address.short_descreption ,type:address.type,address_add:true},
+      { new: true }
+    );
 
+    
+    elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
+  }))
+
+  console.log('done');
+  
+  
+};
 
 
 
