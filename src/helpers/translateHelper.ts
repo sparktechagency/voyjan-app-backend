@@ -20,8 +20,15 @@ async function translateWithLibre(
     }
   } catch (error) {
     console.log(error);
-    const translateText = (await translateBing(text, 'en', targetLang)) as any;
+
+  }
+
+  try {
+      const translateText = (await translateBing(text, 'en', targetLang)) as any;
     return translateText.translation;
+  } catch (error) {
+    console.log(error);
+    
   }
    const response = await fetch('http://72.61.146.46:5003/translate', {
     method: 'POST',
