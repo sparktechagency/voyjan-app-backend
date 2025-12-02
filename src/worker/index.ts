@@ -77,7 +77,7 @@ async function implementType(data:{_id:string,type:string}[]){
     }
 
     for(const key in translateDiffLang! as any){
-   console.log(translateDiffLang[key]);
+
    
       
       translateDiffLang[key] = {
@@ -87,6 +87,10 @@ async function implementType(data:{_id:string,type:string}[]){
     }
 
     await Address.updateOne({_id:d._id},{$set:{type:d.type,diff_lang:translateDiffLang}})
+  
    
   }))
+
+
+  console.log(`${data.length} types implemented`);
 }
