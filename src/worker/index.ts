@@ -39,7 +39,7 @@ export function startWorker() {
 
     const categories = await Category.find({}).lean();
 
-    const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},diff_lang:{$ne:""}},{_id:1,summary:1,diff_lang:1}).limit(20).lean();
+    const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},diff_lang:{$ne:""}},{_id:1,summary:1,diff_lang:1}).limit(1).lean();
     
     
     const leanData = unFinishedData.map((d) => ({ _id: d._id.toString(), summary: d.summary,}));
