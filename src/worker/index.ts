@@ -67,7 +67,9 @@ async function implementType(data:{_id:string,type:string}[]){
   await Promise.all(data.map(async (d) => {
     const translateLang = await singleTextTranslationWithLibre(d.type,'en')!
 
-    
+   if(!translateLang){
+     return
+   }
     const diff_lang = await Address.findOne({_id:d._id},{diff_lang:1}).lean()
     let translateDiffLang = diff_lang?.diff_lang
  
