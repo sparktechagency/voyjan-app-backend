@@ -182,10 +182,11 @@ const createSingleAddressConsumer = async () => {
 }
 
 export const kafkaConsumer = async () =>{
-    await addressConsumer();
-    await addressUpdateConsumer();
-    await updateDescriptionConsumer();
-    await updateTypeConsumer();
-    await handleCsvConsumer(),
-    await createSingleAddressConsumer()
+    await Promise.all([ addressConsumer(),
+    addressUpdateConsumer(),
+    updateDescriptionConsumer(),
+    updateTypeConsumer(),
+    handleCsvConsumer(),
+    createSingleAddressConsumer()])
+    console.log("kafka consumer started");
 }
