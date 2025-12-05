@@ -263,6 +263,13 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
   if (isExist) {
     const translateCategory = await singleTextTranslation(address.name,lang);
     singleCategoryChangeAndSave(address._id.toString(),translateCategory,lang);
+    address.diff_lang = {
+      ...address.diff_lang,
+      [lang]: {
+        ...address.diff_lang?.[lang],
+        transltedType: translateCategory,
+      },
+    }as any
   }
 
   if(!address.imageUrl?.length){
