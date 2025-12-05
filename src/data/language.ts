@@ -55,5 +55,5 @@ export const language = [
   { code: "te", lang: "te-IN", name: "Telugu", voice: "te-IN-Wavenet-A" },
   { code: "ro", lang: "ro-RO", name: "Romanian", voice: "ro-RO-Wavenet-A" },
   { code: "ar", lang: "ar-XA", name: "Arabic", voice: "ar-XA-Wavenet-A" },
-  { code: "zh-CN", lang: "zh-CN", name: "Chinese", voice: "zh-CN-Standard-A" }
+  { code: "zh-CN", lang: "zh-CN", name: "Chinese", voice: "cmn-CN-Standard-A" }
 ];
