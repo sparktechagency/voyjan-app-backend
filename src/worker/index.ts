@@ -63,7 +63,7 @@ const restoreCategoryData = async () =>{
     const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},$and:[
       {diff_lang:{$ne:''}},
       {diff_lang:{$exists:true}}
-    ],address_add:{$exists:false}},{_id:1,summary:1,diff_lang:1}).limit(5).lean();
+    ],address_add:{$exists:false}},{_id:1,summary:1,diff_lang:1}).limit(10).sort({createdAt:-1}).lean();
     
     
     const leanData = unFinishedData.map((d) => ({ _id: d._id.toString(), summary: d.summary,}));
