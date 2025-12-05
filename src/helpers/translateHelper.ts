@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { translate } from 'google-translate-api-x';
 import { language } from '../data/language';
 import { translate as translateBing } from 'bing-translate-api';
+import { text } from 'express';
 
 async function translateWithLibre(
   text: string,
@@ -36,7 +37,7 @@ async function translateWithLibre(
 
     if(targetLang=='no') targetLang='nb';
     if(targetLang=='sr') targetLang='sr-Latn';
-    
+
 
       const translateText = (await translateBing(text, 'en', targetLang)) as any;
     return translateText.translation;
@@ -204,3 +205,14 @@ export const singleTextTranslationWithLibre = async (
     console.error('LibreTranslate error for', lang, error);
   }
 };
+
+
+export const singleTextTranslation = (text:string,toLang:string) => {
+try {
+    const allLang = language
+  const lang = allLang.find(l => l.name === toLang);
+  return translateWithLibre(text, lang?.code!);
+} catch (error) {
+  return text
+}
+}

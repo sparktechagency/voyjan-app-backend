@@ -15,7 +15,7 @@ import XLSX from 'xlsx';
 import { Address } from './address.model';
 import path from 'path';
 import QueryBuilder from '../../builder/QueryBuilder';
-import { singleTextTranslationWithLibre, translateLanguages } from '../../../helpers/translateHelper';
+import { singleTextTranslation, singleTextTranslationWithLibre, translateLanguages } from '../../../helpers/translateHelper';
 import { Server } from 'socket.io';
 import { elasticHelper } from '../../../handlers/elasticSaveData';
 import ApiError from '../../../errors/ApiError';
@@ -28,6 +28,7 @@ import { add } from 'winston';
 import { compressImageFromUrl } from '../../../helpers/comprass-icon';
 import { getAutoCompleteFromApi } from '../../../helpers/thirdPartyHelper';
 import { getCitySummary } from '../../../helpers/cityHelper';
+import { Category } from '../category/category.model';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -258,6 +259,12 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
   const address = await Address.findById(addressId).lean();
   if(!address) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
 
+  const isExist = await Category.findOne({ name: address.name });
+  if (isExist) {
+    const translateCategory = await singleTextTranslation(address.name,lang);
+    singleCategoryChangeAndSave(address._id.toString(),translateCategory,lang);
+  }
+
   if(!address.imageUrl?.length){
     addmissingImages(address as any)
   }
@@ -306,7 +313,7 @@ async function createBackegroundDescription(address:any) {
     diff_lang: address.diff_lang,}, {
     new: true,
   })
-  await RedisHelper.keyDelete(`${address._id}`);
+  await RedisHelper.keyDelete(`${address._id}:*`);
 }
 
 async function addmissingImages(address:IAddress&{_id:string}) {
@@ -317,13 +324,24 @@ async function addmissingImages(address:IAddress&{_id:string}) {
     new: true,
   })
   // await elasticHelper.updateIndex('address', address._id.toString()!, address)
-  await RedisHelper.keyDelete(`${address._id}`);
-  await redisClient.del(`${address._id}`)
+  await RedisHelper.keyDelete(`${address._id}:*`);
+  await redisClient.del(`${address._id}:*`)
   await RedisHelper.keyDelete(`address`);  
   console.log('images added');
 }
 
+async function singleCategoryChangeAndSave(id:string,translateType:string,originLang:string) {
+  const getAddress = await Address.findById(id).lean();
+  let diff_lang = getAddress?.diff_lang;
+  diff_lang![originLang].type = translateType;
+  await Address.findOneAndUpdate({ _id: id }, {
+    diff_lang: diff_lang,}, {
+    new: true,
+  })
+  await RedisHelper.keyDelete(`${id}:*`);
+  await redisClient.del(`${id}`);
 
+}
 
 const addressBulkDelete = async (addressIds: string[]) => {
   const address = await Address.deleteMany({ _id: { $in: addressIds } });
