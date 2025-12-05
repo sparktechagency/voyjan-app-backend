@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^8.19.1",
+    "@google-cloud/text-to-speech": "^6.4.0",
     "@google/generative-ai": "^0.24.1",
     "@iamtraction/google-translate": "^2.0.1",
     "@toon-format/toon": "^2.0.1",

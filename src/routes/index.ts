@@ -4,6 +4,7 @@ import { UserRoutes } from '../app/modules/user/user.route';
 import { AddressRoutes } from '../app/modules/address/address.route';
 import { ChatbotRoutes } from '../app/modules/chatbot/chatbot.route';
 import { CategoryRoutes } from '../app/modules/category/category.route';
+import { VoiceRoutes } from '../app/modules/voice/voice.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -26,6 +27,10 @@ const apiRoutes = [
   {
     path: '/category',
     route: CategoryRoutes
+  },
+  {
+    path: '/voice',
+    route:VoiceRoutes
   }
 ];
 
