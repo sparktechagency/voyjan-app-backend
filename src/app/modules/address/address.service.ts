@@ -259,7 +259,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
   const address = await Address.findById(addressId).lean();
   if(!address) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
 
-  const isExist = await Category.findOne({ name: address.name });
+  const isExist = await Category.findOne({ name: address.diff_lang?.[lang]?.type });
   if (isExist) {
     const translateCategory = await singleTextTranslation(address.name,lang);
     singleCategoryChangeAndSave(address._id.toString(),translateCategory,lang);
@@ -267,7 +267,7 @@ const singleAaddressFromDB = async (addressId: string,lang:string='English') => 
       ...address.diff_lang,
       [lang]: {
         ...address.diff_lang?.[lang],
-        transltedType: translateCategory,
+        type: translateCategory,
       },
     }as any
   }
