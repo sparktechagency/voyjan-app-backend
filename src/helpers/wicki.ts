@@ -321,7 +321,7 @@ export const  addDetailsInExistingAddress = async (
      
     }
   }
-  // kafkaProducer.sendMessage('updateDescription', {});
+  kafkaProducer.sendMessage('updateDescription', {});
 };
 
 export const addLanguagesInExistingAddress = async (
@@ -460,8 +460,8 @@ export const addTypeInExistingAddress = async (
   }
 };
 
-export const addLongDescription = async () => {
-  const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(50).lean();
+export const addLongDescription = async (limit:number=200) => {
+  const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(limit).lean();
   
   const data = await getLongDescriptionUsingAI(alladdress)
   

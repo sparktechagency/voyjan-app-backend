@@ -81,7 +81,8 @@ Return the result in this JSON format:
 
 
 export const getLongDescriptionUsingAI = async (address: IAddress[]) => {
-  const categories = (await Category.find({})).map(c => c.name);
+  try {
+      const categories = (await Category.find({})).map(c => c.name);
   const enCodedAddress = encode.encode(address?.map((a:any)=>({...a,_id:a._id.toString()})) as any);
   console.log(enCodedAddress);
   
@@ -111,6 +112,7 @@ Return the result in this JSON format:
         `;
   const response = await chatbot.generateContent(prompData);
 
+  
   const data = response.response.text()?.replace(/(\r\n|\n|\r)/gm, ' ');
   
   //remove ```json
@@ -121,4 +123,9 @@ Return the result in this JSON format:
     _id: string;
   }[]
 
+  } catch (error) {
+    console.log(error);
+    
+    return []
+  }
 }

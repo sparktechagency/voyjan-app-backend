@@ -24,35 +24,11 @@ export function startWorker() {
     // });
 
     // run every 15 seconds
-    cronJob.schedule("* * * * *", async () => {
+    cronJob.schedule("*/10 * * * * *", async () => {
   try {
-    // console.log("Cron Job Runned");
-
-    // const finishedData = await Address.find({ diff_lang: "" }).limit(1).lean();
-    // // console.log(finishedData);
-
-    // if (finishedData.length > 0) {
-    //   for (const data of finishedData) {
-    //     await AddressService.singleAaddressFromDB(data._id.toString());
-    //   }
-    // }
-
-    const categories = await Category.find({}).lean();
-
-    const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},diff_lang:{$ne:""}},{_id:1,summary:1,diff_lang:1}).limit(5).lean();
-    
-    
-    const leanData = unFinishedData.map((d) => ({ _id: d._id.toString(), summary: d.summary,}));
-    if(leanData.length > 0){
-      const types = await fixTypeUsingAI(leanData as any);
-      
-      await implementType(types as any);
-    }
-    // await addDetailsInExistingAddress(finishedData as any);
-    // const otherTypes = await Address.findOne({type:{$in:['','Other']}})
-    // if(otherTypes){
-    //   await addTypeInExistingAddress(otherTypes as any)
-    // }
+await restoreCategoryData();
+  await restoreLang();
+   
 
     console.log("Cron Job Runned");
 
@@ -62,9 +38,46 @@ export function startWorker() {
 });
 }
 
+const restoreLang = async () => {
+  
+    const finishedData = await Address.find({ $or:[
+      {diff_lang:''},
+      {diff_lang:{$exists:false}}
+    ],address_add:true }).limit(1).lean();
+ 
+
+    if (finishedData.length > 0) {
+      for (const data of finishedData) {
+        // a buffer time for reduce the rate limit
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await AddressService.singleAaddressFromDB(data._id.toString());
+      }
+    }
+
+}
+
+
+const restoreCategoryData = async () =>{
+      const categories = await Category.find({}).lean();
+
+    const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},$and:[
+      {diff_lang:{$ne:''}},
+      {diff_lang:{$exists:true}}
+    ],address_add:{$exists:false}},{_id:1,summary:1,diff_lang:1}).limit(5).lean();
+    
+    
+    const leanData = unFinishedData.map((d) => ({ _id: d._id.toString(), summary: d.summary,}));
+    if(leanData.length > 0){
+      const types = await fixTypeUsingAI(leanData as any);
+      
+      await implementType(types as any);
+    }
+}
+
 
 async function implementType(data:{_id:string,type:string}[]){
   await Promise.all(data.map(async (d) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const translateLang = await singleTextTranslationWithLibre(d.type,'en')!
 
    if(!translateLang){

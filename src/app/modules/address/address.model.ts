@@ -35,7 +35,7 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
     address_add:{
         type:Boolean,
         default:false
-    }
+    },
 },{
     timestamps: true
 });
