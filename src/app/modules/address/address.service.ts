@@ -151,7 +151,7 @@ const searchByLatlong = async (
         $minDistance: 0, // optional
       },
     },
-  },{diff_lang:0}).lean();
+  },{diff_lang:0,long_descreption:0,summary:0,city:0,state:0,country:0,postalCode:0,pageid:0,status:0,isCompleted:0}).lean();
 
   if (!addresses.length || addresses.length < 30) {
     addNotFoundData(latlong.latitude, latlong.longitude, Number(radius));
