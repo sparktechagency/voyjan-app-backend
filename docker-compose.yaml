@@ -28,6 +28,7 @@ services:
       - xpack.security.enabled=false
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    memlimit: 4g
 
     
   redis:
