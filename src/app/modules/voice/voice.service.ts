@@ -7,6 +7,8 @@ import ApiError from "../../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
 import { hashText } from "../../../shared/hashText";
 import { RedisHelper } from "../../../helpers/redisHelper";
+import config from "../../../config";
+import { url } from "inspector";
 
 const client = new textToSpeech.TextToSpeechClient({
     keyFilename: path.join(process.cwd(),'key',"julien-voice.json"),
@@ -17,8 +19,10 @@ const changeTextToSpeech = async (text: string,lang: string,res:Response) => {
     if(hashExist){
         const exist = hashExist as any
         
-        const audioPath = path.join(process.cwd(), "uploads",exist.voice);
-        return res.setHeader("Content-Type", "audio/mp3").sendFile(audioPath);
+
+        return res.json({
+            url:exist.voice
+        })
     }
     const lngItem = language.find((item) => item.code === lang);
     if(!lngItem?.code){
@@ -51,11 +55,16 @@ const changeTextToSpeech = async (text: string,lang: string,res:Response) => {
 
     fs.writeFileSync(audioPath, audioContent as any, "binary");
     const hash = hashText(text, lang);
-    console.log(hash);
+    const fullPath = `${config.urls.base_url}${tempPath}`;
     
-    await RedisHelper.redisSet(hash,{voice:tempPath},{},60*60*24*3);
-    res.setHeader("Content-Type", "audio/mp3");
-   return res.send(audioContent);
+    await RedisHelper.redisSet(hash,{voice:fullPath},{},60*60*24*3);
+
+
+    return res.json({
+        url: fullPath
+    })
+
+
 
 }
 
