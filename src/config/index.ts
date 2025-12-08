@@ -31,5 +31,8 @@ export default {
   },
   urls:{
     base_url:process.env.BASE_URL
+  },
+  tripAdvisor:{
+    key:process.env.TRIP_ADVISOR_KEY
   }
 };

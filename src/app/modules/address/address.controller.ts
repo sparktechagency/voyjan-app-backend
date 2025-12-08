@@ -7,6 +7,7 @@ import { kafkaProducer } from "../../../handlers/kafka.producer";
 import { Address } from "./address.model";
 import ApiError from "../../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
+import { Types } from "mongoose";
 
 const createAddress = catchAsync(async (req:Request,res:Response) => {
     await kafkaProducer.sendMessage('address', req.body?.address);
@@ -129,6 +130,22 @@ const singleTextTranslate = catchAsync(async (req:Request,res:Response) => {
     });
 })
 
+const getWebdetailsOfAddress = catchAsync(async (req:Request,res:Response) => {
+    if(!req.params.id){
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'id is required');
+    }
+    if(!(new Types.ObjectId(req.params.id))){
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'id is invalid');
+    }
+    const createdAddress = await AddressService.getWebdetailsOfAddress(req.params.id,req.query.lang as string);
+    sendResponse(res, {
+        success: true,
+        message: "web details get successfully",
+        data: createdAddress,
+        statusCode: 200,
+    });
+})
+
 export const AddressController = {
     createAddress,
     saveSingleAddress,
@@ -140,5 +157,6 @@ export const AddressController = {
     searchAddress,
     getSingleAddress,
     deleteBulkAddress,
-    singleTextTranslate
+    singleTextTranslate,
+    getWebdetailsOfAddress
 }

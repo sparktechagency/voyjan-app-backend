@@ -29,6 +29,7 @@ import { compressImageFromUrl } from '../../../helpers/comprass-icon';
 import { getAutoCompleteFromApi } from '../../../helpers/thirdPartyHelper';
 import { getCitySummary } from '../../../helpers/cityHelper';
 import { Category } from '../category/category.model';
+import { TripAdvisorHelper } from '../../../helpers/tripAdvisorHelper';
 const createAddressIntoDB = async (address: string) => {
   const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
@@ -244,7 +245,7 @@ const searchAddress = async (query:Record<string,any>) => {
     };
   });
 
-  console.log('from Db');
+
   
   await RedisHelper.redisSet("address",{data},query,3600);
   return { data};
@@ -362,6 +363,21 @@ const translateSingleText = async (text:string) => {
   return data
 }
 
+const getWebdetailsOfAddress = async (id: string,lang:string='en') => {
+  const cache =await RedisHelper.redisGet(`details:${id}`,{lang:lang});
+  if(cache) {
+    console.log('cache found');
+    return cache
+  }
+  const address = await Address.findById(id).lean();
+  const web_url = await TripAdvisorHelper.getLocationDetails(address?.name!,lang);
+  if(!web_url) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
+  await RedisHelper.redisSet(`details:${id}`,web_url,{lang:lang},60);
+  return web_url
+};
+
+
+
 export const AddressService = {
   createAddressIntoDB,
   createAddressSingleIntoDB,
@@ -373,5 +389,6 @@ export const AddressService = {
   searchAddress,
   singleAaddressFromDB,
   addressBulkDelete,
-  translateSingleText
+  translateSingleText,
+  getWebdetailsOfAddress
 };
