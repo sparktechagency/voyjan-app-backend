@@ -370,7 +370,7 @@ const getWebdetailsOfAddress = async (id: string,lang:string='en') => {
     return cache
   }
   const address = await Address.findById(id).lean();
-  const web_url = await TripAdvisorHelper.getLocationDetails(address?.name!,lang);
+  const web_url = await TripAdvisorHelper.getLocationDetails(address?.name!,lang,id);
   if(!web_url) throw new ApiError(StatusCodes.NOT_FOUND,'Address not found');
   await RedisHelper.redisSet(`details:${id}`,web_url,{lang:lang},60);
   return web_url
