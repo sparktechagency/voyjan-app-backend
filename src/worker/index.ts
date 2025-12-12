@@ -5,6 +5,7 @@ import { AddressService } from "../app/modules/address/address.service";
 import { Category } from "../app/modules/category/category.model";
 import { fixTypeUsingAI } from "../helpers/generateDescriptions";
 import { singleTextTranslationWithLibre } from "../helpers/translateHelper";
+import { esClient } from "../config/elasticSearch.config";
 
 export function startWorker() {
     // cronJob.schedule("*/5 * * * *",async () => {
@@ -40,7 +41,8 @@ await restoreCategoryData();
 
 const restoreLang = async () => {
   
-    const finishedData = await Address.find({ $or:[
+try {
+      const finishedData = await Address.find({ $or:[
       {diff_lang:''},
       {diff_lang:{$exists:false}}
     ],address_add:true }).limit(1).lean();
@@ -50,15 +52,23 @@ const restoreLang = async () => {
       for (const data of finishedData) {
         // a buffer time for reduce the rate limit
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        if(!data._id){
+          continue
+        }
         await AddressService.singleAaddressFromDB(data._id.toString());
       }
     }
+} catch (error) {
+  console.log(error);
+  
+}
 
 }
 
 
 const restoreCategoryData = async () =>{
-      const categories = await Category.find({}).lean();
+try {
+        const categories = await Category.find({}).lean();
 
     const unFinishedData = await Address.find({type:{$nin:categories.map(c => c.name)},address_add:{$exists:false}},{_id:1,summary:1,diff_lang:1}).limit(10).sort({createdAt:-1}).lean();
     
@@ -69,11 +79,16 @@ const restoreCategoryData = async () =>{
       
       await implementType(types as any);
     }
+} catch (error) {
+  console.log(error);
+  
+}
 }
 
 
 async function implementType(data:{_id:string,type:string}[]){
-  await Promise.all(data.map(async (d) => {
+try {
+    await Promise.all(data.map(async (d) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const translateLang = await singleTextTranslationWithLibre(d.type,'en')!
 
@@ -89,8 +104,6 @@ async function implementType(data:{_id:string,type:string}[]){
     }
 
     for(const key in translateDiffLang! as any){
-
-   
       
       translateDiffLang[key] = {
         ...translateDiffLang[key],
@@ -105,4 +118,38 @@ async function implementType(data:{_id:string,type:string}[]){
 
 
   console.log(`${data.length} types implemented`);
+} catch (error) {
+  console.log(error);
+  
+}
+}
+
+export async function BulkUpdateAddress() {
+  try {
+    const allData = await Address.find({}, { type: 1 }).lean();
+
+    const chunkSize = 1000; // change as needed
+    for (let i = 0; i < allData.length; i += chunkSize) {
+      const chunk = allData.slice(i, i + chunkSize);
+
+      const mapData = chunk.flatMap(d => [
+        { update: { _index: 'address', _id: d._id.toString() } },
+        { doc: { type: d.type } }
+      ]);
+
+      const res = await esClient.bulk({ body: mapData });
+
+      console.log(
+        `Chunk ${i / chunkSize + 1}: processed ${chunk.length} documents`
+      );
+
+      if (res.errors) {
+        console.error("Bulk update errors:", res.items);
+      }
+    }
+
+    console.log("Bulk update completed");
+  } catch (error) {
+    console.error(error);
+  }
 }

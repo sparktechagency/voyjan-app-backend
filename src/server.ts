@@ -7,7 +7,7 @@ import { seedSuperAdmin } from './DB/seedAdmin';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger';
 import { addressConsumer, addressUpdateConsumer, kafkaConsumer, updateLangConsumer } from './handlers/kafka.consumer';
-import { startWorker } from './worker';
+import { BulkUpdateAddress, startWorker } from './worker';
 
 //uncaught exception
 process.on('uncaughtException', error => {
@@ -25,6 +25,7 @@ async function main() {
     await seedSuperAdmin();
     kafkaConsumer()
     startWorker()
+    BulkUpdateAddress()
 
     const port =
       typeof config.port === 'number' ? config.port : Number(config.port);

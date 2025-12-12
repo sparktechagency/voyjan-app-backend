@@ -252,6 +252,7 @@ const searchAddress = async (query:Record<string,any>) => {
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
+  
   const cache = await RedisHelper.redisGet(`${addressId}`,{lang:lang});
   if(cache) {
     console.log('cache found');
