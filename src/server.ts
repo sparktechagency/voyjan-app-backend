@@ -25,7 +25,7 @@ async function main() {
     await seedSuperAdmin();
     kafkaConsumer()
     startWorker()
-    BulkUpdateAddress()
+
 
     const port =
       typeof config.port === 'number' ? config.port : Number(config.port);
