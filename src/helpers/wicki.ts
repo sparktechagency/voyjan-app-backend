@@ -20,7 +20,7 @@ export const geosearchEn = async (
   lat: number,
   lon: number,
   radius = 10000,
-  limit = 50,
+  limit = 10,
   isSingle = false,
   address?: string
 ): Promise<any[]> => {
@@ -461,11 +461,15 @@ export const addTypeInExistingAddress = async (
 };
 
 export const addLongDescription = async (limit:number=200) => {
-  const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(limit).lean();
+try {
+    const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(limit).lean();
   
   const data = await getLongDescriptionUsingAI(alladdress)
+
   
-  await Promise.all(data.map(async (address) => {
+
+  
+  await Promise.all(data?.data?.map(async (address) => {
     const data = await Address.findOneAndUpdate(
       { _id: address._id },
       { long_descreption: address.long_descreption, summary: address.short_descreption ,type:address.type,address_add:true},
@@ -476,8 +480,19 @@ export const addLongDescription = async (limit:number=200) => {
     elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
   }))
 
-  console.log('done');
+  await Address.deleteMany({_id:{$in:data?.unpopular}})
+
+  if(data?.unpopular?.length){
+    await Promise.all(data.unpopular.map(async (id:string) => {
+     await elasticHelper.deleteIndex('address',id);
+     console.log(`deleteing ${id}`);
+     
+    }))
+  }
+} catch (error) {
+  console.log(error);
   
+}
   
 };
 

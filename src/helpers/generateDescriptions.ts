@@ -80,52 +80,65 @@ Return the result in this JSON format:
 }
 
 
-export const getLongDescriptionUsingAI = async (address: IAddress[]) => {
+export const getLongDescriptionUsingAI = async (address: IAddress[]):Promise<{data:{short_descreption:string,long_descreption:string,type:string,_id:string}[],unpopular:string[]}> => {
   try {
       const categories = (await Category.find({})).map(c => c.name);
   const enCodedAddress = encode.encode(address?.map((a:any)=>({...a,_id:a._id.toString()})) as any);
   console.log(enCodedAddress);
   
-  const prompData = `
-       You are a place-type classifier. Below is a list of valid categories:
+const promptData = `
+You are a place-type classifier.
+
+Valid categories:
 ${categories.join(', ')}
-my address: ${enCodedAddress}
+
+Input addresses or place texts:
+${enCodedAddress}
 
 Your task:
-- Read the provided text.
-- Identify which single category from the list best matches the place.
-- Respond with ONLY the category name.
-- Generate a short summary of the place called short_descreption in 50 words.
-- Generate a long summary of the place called long_descreption.
-- Do NOT add explanations, extra words, punctuation, or formatting.
+1. Analyze each provided address or place text.
+2. IGNORE places that are restaurants, hotels, stations, or schools.
+3. For each remaining place, choose ONE best matching category from the valid categories list.
+4. If a place does not clearly belong to any category or is not well-known, classify it as "unpopular".
+5. For classified places, generate:
+   - short_description (maximum 50 words)
+   - long_description (detailed explanation)
+6. Do NOT add explanations, comments, markdown, or extra text.
 
-Return the result in this JSON format:
-[
-  {
-    short_descreption: "",
-    long_descreption: "",
-    type: "",
-    _id: ""
-  }
-]
+Return ONLY valid JSON in the following format:
 
-        `;
-  const response = await chatbot.generateContent(prompData);
+{
+  "data": [
+    {
+      "_id": "",
+      "type": "",
+      "short_description": "",
+      "long_description": ""
+    }
+  ],
+  "unpopular": []
+}
+
+Rules:
+- "type" MUST be one of the valid categories.
+- If a place is classified as "unpopular", DO NOT include it in "data"; add its "_id" to the "unpopular" array.
+- Do not return null or undefined values.
+- Do not return anything outside the JSON structure.
+`;
+
+
+
+  const response = await chatbot.generateContent(promptData);
 
   
   const data = response.response.text()?.replace(/(\r\n|\n|\r)/gm, ' ');
   
   //remove ```json
-  return JSON.parse(data.replace('```json', '').replace('```', '')) as {
-    short_descreption: string;
-    long_descreption: string;
-    type: string;
-    _id: string;
-  }[]
+  return JSON.parse(data.replace('```json', '').replace('```', '')) 
 
   } catch (error) {
     console.log(error);
     
-    return []
+    return {} as any
   }
 }
