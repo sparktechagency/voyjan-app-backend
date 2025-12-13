@@ -55,10 +55,10 @@ async function main() {
     if (server) {
       server.close(() => {
         errorLogger.error('UnhandleRejection Detected', error);
-        process.exit(1);
       });
     } else {
-      process.exit(1);
+      console.log(error);
+      
     }
   });
 }

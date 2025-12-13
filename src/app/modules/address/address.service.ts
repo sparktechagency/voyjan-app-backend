@@ -31,19 +31,23 @@ import { getCitySummary } from '../../../helpers/cityHelper';
 import { Category } from '../category/category.model';
 import { TripAdvisorHelper } from '../../../helpers/tripAdvisorHelper';
 const createAddressIntoDB = async (address: string) => {
-  const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
+try {
+    const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
 
 
   if (!lat || !lon) return;
   const latlong = await geosearchEn(lat!, lon!);
 
   await savedLocationsInDBParrelal(latlong, place);
+} catch (error) {
+  
+}
   return;
 };
 
 const createAddressSingleIntoDB = async (address: IAddress) => {
   try {
-     const details = await getCitySummary(address.name)
+  const details = await getCitySummary(address.name)
   if(!details?.pageid) return
   const data = {
     name: details?.title || address.name,
