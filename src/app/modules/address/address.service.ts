@@ -196,6 +196,7 @@ const updateAddress = async (
   const address = await Address.findOneAndUpdate({ _id: addressId }, data, {
     new: true,
   });
+  await elasticHelper.updateIndex('address',addressId,data);
   return address;
 };
 
