@@ -132,7 +132,9 @@ const searchByLatlong = async (
   lang: string = 'English',
   type: string[] = []
 ) => {
-  console.log(type);
+  if(!type.length){
+    return []
+  }
   
   const cache = await RedisHelper.redisGet("address",{radius:radius,lang:lang,type:type,lat:latlong.latitude,lon:latlong.longitude});
   if(cache) {
@@ -226,7 +228,12 @@ const searchAddress = async (query:Record<string,any>) => {
       };
     })
     if(query?.searchTerm?.length>2) {
-      createAddressIntoDB(query.searchTerm);
+      try {
+        createAddressIntoDB(query.searchTerm);
+      } catch (error) {
+        console.log(error);
+        
+      }
       
     }
     await RedisHelper.redisSet("address",{data},query,3600);
@@ -342,7 +349,8 @@ async function addmissingImages(address:IAddress&{_id:string}) {
 }
 
 async function singleCategoryChangeAndSave(id:string,translateType:string,originLang:string) {
-  const getAddress = await Address.findById(id).lean();
+try {
+    const getAddress = await Address.findById(id).lean();
   let diff_lang = getAddress?.diff_lang;
   diff_lang![originLang].type = translateType;
   await Address.findOneAndUpdate({ _id: id }, {
@@ -351,6 +359,10 @@ async function singleCategoryChangeAndSave(id:string,translateType:string,origin
   })
   await RedisHelper.keyDelete(`${id}:*`);
   await redisClient.del(`${id}`);
+} catch (error) {
+  console.log(error);
+  
+}
 
 }
 
