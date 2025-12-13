@@ -202,6 +202,7 @@ const updateAddress = async (
 
 const deleteAddress = async (addressId: string) => {
   const address = await Address.findByIdAndDelete(addressId);
+  await elasticHelper.deleteIndex('address',addressId);
   return address;
 };
 
@@ -373,8 +374,15 @@ try {
 
 const addressBulkDelete = async (addressIds: string[]) => {
   const address = await Address.deleteMany({ _id: { $in: addressIds } });
+  deleteBulk(addressIds);
   return address;
 };
+
+async function deleteBulk(ids:string[]) {
+for(const id of ids){
+  await elasticHelper.deleteIndex('address',id);
+}
+}
 
 const translateSingleText = async (text:string) => {
   const data = await singleTextTranslationWithLibre(text,'en');
