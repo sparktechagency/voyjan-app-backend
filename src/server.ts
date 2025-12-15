@@ -12,6 +12,8 @@ import { BulkUpdateAddress, startWorker } from './worker';
 //uncaught exception
 process.on('uncaughtException', error => {
   errorLogger.error('UnhandleException Detected', error);
+  console.log(error.stack);
+  
   process.exit(1);
 });
 
@@ -51,14 +53,19 @@ async function main() {
   }
 
   //handle unhandleRejection
-  process.on('unhandledRejection', error => {
+  process.on('unhandledRejection', (error:any) => {
     if (server) {
       server.close(() => {
         errorLogger.error('UnhandleRejection Detected', error);
+        console.log(error.stack);
+        
+        process.exit(1);
+
       });
+      process.exit(1);
     } else {
       console.log(error);
-      
+      process.exit(1);
     }
   });
 }
