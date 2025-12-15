@@ -35,6 +35,8 @@ export function startWorker() {
       await restoreCategoryData();
       await restoreLang();
 
+      await Address.findOneAndDelete({_id:"0"},{})
+
       console.log('Cron Job Runned');
     } catch (error) {
       console.log(error);
