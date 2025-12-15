@@ -42,6 +42,8 @@ async function main() {
       );
     });
 
+    BulkUpdateAddress()
+
     //socket
     const io = new Server(server, {
       pingTimeout: 60000,
@@ -67,6 +69,7 @@ async function main() {
         } else {
           console.error('Rejection reason (not Error):', reason);
         }
+        return
 
         process.exit(1);
       });

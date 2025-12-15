@@ -147,30 +147,33 @@ async function implementType(data: { _id: string; type: string }[]) {
 
 export async function BulkUpdateAddress() {
   try {
-    const allData = await Address.find({}, { type: 1 }).lean();
+    // const allData = await Address.find({}, { type: 1 }).lean();
 
-    const chunkSize = 1000; // change as needed
-    for (let i = 0; i < allData.length; i += chunkSize) {
-      const chunk = allData.slice(i, i + chunkSize);
+    // const chunkSize = 1000; // change as needed
+    // for (let i = 0; i < allData.length; i += chunkSize) {
+    //   const chunk = allData.slice(i, i + chunkSize);
 
-      const mapData = chunk.flatMap(d => [
-        { update: { _index: 'address', _id: d._id.toString() } },
-        { doc: { type: d.type } },
-      ]);
+    //   const mapData = chunk.flatMap(d => [
+    //     { update: { _index: 'address', _id: d._id.toString() } },
+    //     { doc: { type: d.type } },
+    //   ]);
 
-      const res = await esClient.bulk({ body: mapData });
+    //   const res = await esClient.bulk({ body: mapData });
 
-      console.log(
-        `Chunk ${i / chunkSize + 1}: processed ${chunk.length} documents`
-      );
+    //   console.log(
+    //     `Chunk ${i / chunkSize + 1}: processed ${chunk.length} documents`
+    //   );
 
-      if (res.errors) {
-        console.error('Bulk update errors:', res.items);
-      }
-    }
+    //   if (res.errors) {
+    //     console.error('Bulk update errors:', res.items);
+    //   }
+    // }
 
-    console.log('Bulk update completed');
+    // console.log('Bulk update completed');
+
+   
   } catch (error) {
     console.error(error);
   }
+ 
 }
