@@ -88,7 +88,7 @@ const   restoreCategoryData = async () => {
     }));
     if (leanData.length > 0) {
       const types = await fixTypeUsingAI(leanData as any);
-
+      if(types.length<1) return
       await implementType(types as any);
     }
   } catch (error) {
@@ -100,6 +100,8 @@ async function implementType(data: { _id: string; type: string }[]) {
   try {
     await Promise.all(
       data.map(async d => {
+        console.log(d._id);
+        
         if(!safeObjectId(d._id)) return
         await new Promise(resolve => setTimeout(resolve, 1000));
         const translateLang = await singleTextTranslationWithLibre(

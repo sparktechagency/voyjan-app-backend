@@ -76,6 +76,7 @@ Return the result in this JSON format:
 
   } catch (error) {
     console.log(error);
+    return []
   }
 }
 
