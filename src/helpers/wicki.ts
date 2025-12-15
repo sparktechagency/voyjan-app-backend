@@ -14,6 +14,7 @@ import config from '../config';
 import { RedisHelper } from './redisHelper';
 import { redisClient } from '../config/redis.client';
 import { getCityByPageId, getCitySummary, WikiPage } from './cityHelper';
+import { Types } from 'mongoose';
 
 wikipedia.setUserAgent('VoyazenApp/1.0 (sharif@example.com)');
 export const geosearchEn = async (
@@ -354,6 +355,10 @@ export const addShortDescription = async (
 ) => {
   try {
 
+    if(!(new Types.ObjectId(address._id))){
+      return
+    }
+
 
     // const shortDescription = await generateAiContnents(address.summary!,100);
     // const longDescription = await generateAiContnents(address.summary!);
@@ -384,7 +389,8 @@ export const addNotFoundData = async (
   lon: number,
   radius = 10000
 ) => {
-  const addresses = await Address.find(
+try {
+    const addresses = await Address.find(
     {
       location: {
         $near: {
@@ -410,6 +416,10 @@ export const addNotFoundData = async (
 
   await savedLocationsInDBParrelal(latlong, place?.fullAddress || '');
   await RedisHelper.keyDelete('address');
+} catch (error) {
+  console.log(error);
+  
+}
 };
 
 export async function getAddressFromLatLng(lat: number, lon: number) {
