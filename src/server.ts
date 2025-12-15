@@ -6,14 +6,19 @@ import config from './config';
 import { seedSuperAdmin } from './DB/seedAdmin';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger';
-import { addressConsumer, addressUpdateConsumer, kafkaConsumer, updateLangConsumer } from './handlers/kafka.consumer';
+import {
+  addressConsumer,
+  addressUpdateConsumer,
+  kafkaConsumer,
+  updateLangConsumer,
+} from './handlers/kafka.consumer';
 import { BulkUpdateAddress, startWorker } from './worker';
 
 //uncaught exception
 process.on('uncaughtException', error => {
   errorLogger.error('UnhandleException Detected', error);
   console.log(error.stack);
-  
+
   process.exit(1);
 });
 
@@ -25,9 +30,8 @@ async function main() {
 
     //Seed Super Admin after database connection is successful
     await seedSuperAdmin();
-    kafkaConsumer()
-    startWorker()
-
+    kafkaConsumer();
+    startWorker();
 
     const port =
       typeof config.port === 'number' ? config.port : Number(config.port);
@@ -53,18 +57,26 @@ async function main() {
   }
 
   //handle unhandleRejection
-  process.on('unhandledRejection', (error:any) => {
+  process.on('unhandledRejection', (reason: any) => {
     if (server) {
       server.close(() => {
-        errorLogger.error('UnhandleRejection Detected', error);
-        console.log(error.stack);
-        
-        process.exit(1);
+        errorLogger.error('Unhandled Rejection Detected', reason);
 
+        if (reason instanceof Error) {
+          console.error(reason.stack);
+        } else {
+          console.error('Rejection reason (not Error):', reason);
+        }
+
+        process.exit(1);
       });
-      process.exit(1);
     } else {
-      console.log(error);
+      if (reason instanceof Error) {
+        console.error(reason.stack);
+      } else {
+        console.error('Rejection reason (not Error):', reason);
+      }
+
       process.exit(1);
     }
   });
