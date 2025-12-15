@@ -21,7 +21,7 @@ async function translateWithLibre(
       return translateText.text;
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
 
   }
 
@@ -43,7 +43,7 @@ async function translateWithLibre(
     return translateText.translation;
   } catch (error) {
     console.log('Bing reject');
-    console.log(error);
+    // console.log(error);
     
   }
 
@@ -70,7 +70,7 @@ async function translateWithLibre(
     return translatedText;
   }
  } catch (error) {
-  console.log(error);
+  // console.log(error);
   
  }
 
