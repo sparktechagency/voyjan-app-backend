@@ -135,13 +135,13 @@ async function textTranslationWithLibre(
         };
 
         if(lang.name=='zh-CN') {
-          console.log('languageTranslate',languageTranslate[lang.name]);
+          // console.log('languageTranslate',languageTranslate[lang.name]);
         }
         
 
         
       } catch (error) {
-        console.error('LibreTranslate error for', lang.name,error);
+        // console.error('LibreTranslate error for', lang.name,error);
         languageTranslate[lang.name] = {
           translateText: text,
           title: title,
@@ -202,7 +202,7 @@ export const singleTextTranslationWithLibre = async (
 
     return diff_lang;
   } catch (error) {
-    console.error('LibreTranslate error for', lang, error);
+    // console.error('LibreTranslate error for', lang, error);
   }
 };
 
