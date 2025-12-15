@@ -9,6 +9,7 @@ import { Category } from '../app/modules/category/category.model';
 import { fixTypeUsingAI } from '../helpers/generateDescriptions';
 import { singleTextTranslationWithLibre } from '../helpers/translateHelper';
 import { esClient } from '../config/elasticSearch.config';
+import { safeObjectId } from '../helpers/mongoIdChecker';
 
 export function startWorker() {
   // cronJob.schedule("*/5 * * * *",async () => {
@@ -54,9 +55,10 @@ const restoreLang = async () => {
       for (const data of finishedData) {
         // a buffer time for reduce the rate limit
         await new Promise(resolve => setTimeout(resolve, 1000));
-        if (!data._id) {
+        if (!data._id || !safeObjectId(data._id.toString())) {
           continue;
         }
+        
         await AddressService.singleAaddressFromDB(data._id.toString());
       }
     }
@@ -65,7 +67,7 @@ const restoreLang = async () => {
   }
 };
 
-const restoreCategoryData = async () => {
+const   restoreCategoryData = async () => {
   try {
     const categories = await Category.find({}).lean();
 
@@ -98,6 +100,7 @@ async function implementType(data: { _id: string; type: string }[]) {
   try {
     await Promise.all(
       data.map(async d => {
+        if(!safeObjectId(d._id)) return
         await new Promise(resolve => setTimeout(resolve, 1000));
         const translateLang = await singleTextTranslationWithLibre(
           d.type,

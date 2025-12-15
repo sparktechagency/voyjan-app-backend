@@ -266,7 +266,8 @@ const searchAddress = async (query:Record<string,any>) => {
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
-  if(!(new Types.ObjectId(addressId))){
+try {
+    if(!(new Types.ObjectId(addressId))){
     return {error:'Invalid addressId'}
   }
   const cache = await RedisHelper.redisGet(`${addressId}`,{lang:lang});
@@ -330,21 +331,31 @@ if(lang!=='English') {
     await RedisHelper.redisSet(`${addressId}`,data,{lang:lang},60);
   
   return data
+} catch (error) {
+  console.log(error);
+  
+}
 }
 
 
 async function createBackegroundDescription(address:any) {
-    address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.place,address.long_descreption)
+try {
+      address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.place,address.long_descreption)
     // await elasticHelper.updateIndex('address', address._id.toString()!, address)
       await Address.findOneAndUpdate({ _id: address._id }, {
     diff_lang: address.diff_lang,}, {
     new: true,
   })
   await RedisHelper.keyDelete(`${address._id}:*`);
+} catch (error) {
+  console.log(error);
+  
+}
 }
 
 async function addmissingImages(address:IAddress&{_id:string}) {
-
+try {
+  
   const images = await getImagesFromApi(address.name);
   await Address.findOneAndUpdate({ _id: address._id }, {
     imageUrl: images,}, {
@@ -355,10 +366,17 @@ async function addmissingImages(address:IAddress&{_id:string}) {
   await redisClient.del(`${address._id}:*`)
   await RedisHelper.keyDelete(`address`);  
   console.log('images added');
+} catch (error) {
+  console.log(error);
+  
+}
 }
 
 async function singleCategoryChangeAndSave(id:string,translateType:string,originLang:string) {
 try {
+  if(!(new Types.ObjectId(id))){
+    return 
+  }
     const getAddress = await Address.findById(id).lean();
   let diff_lang = getAddress?.diff_lang;
   diff_lang![originLang].type = translateType;

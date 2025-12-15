@@ -454,8 +454,11 @@ export const addTypeInExistingAddress = async (
   address: IAddress & { _id: string }
 ) => {
   try {
+    if(!(new Types.ObjectId(address._id))){
+      return
+    }
     const type = await getTheTypeUsingAI(address.summary!);
-    console.log(type);
+
 
     const data = await Address.findOneAndUpdate(
       { _id: address._id },
@@ -480,6 +483,9 @@ try {
 
   
   await Promise.all(data?.data?.map(async (address) => {
+    if(!(new Types.ObjectId(address._id))){
+      return
+    }
     const data = await Address.findOneAndUpdate(
       { _id: address._id },
       { long_descreption: address.long_descreption, summary: address.short_descreption ,type:address.type,address_add:true},
@@ -489,6 +495,17 @@ try {
     
     elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
   }))
+
+  if(data?.unpopular?.length){
+    const isNull = data?.unpopular?.some(async (id:string) => {
+      const data = Types.ObjectId.isValid(id);
+      return !data
+    })
+
+    if(isNull){
+      return
+    }
+  }
 
   await Address.deleteMany({_id:{$in:data?.unpopular}})
 
