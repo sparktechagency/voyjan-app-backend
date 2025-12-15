@@ -507,6 +507,10 @@ try {
     }
   }
 
+  if(!data?.unpopular?.length){
+    return
+  }
+
   await Address.deleteMany({_id:{$in:data?.unpopular}})
 
   if(data?.unpopular?.length){
