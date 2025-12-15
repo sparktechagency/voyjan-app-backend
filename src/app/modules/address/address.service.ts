@@ -30,6 +30,7 @@ import { getAutoCompleteFromApi } from '../../../helpers/thirdPartyHelper';
 import { getCitySummary } from '../../../helpers/cityHelper';
 import { Category } from '../category/category.model';
 import { TripAdvisorHelper } from '../../../helpers/tripAdvisorHelper';
+import { Types } from 'mongoose';
 const createAddressIntoDB = async (address: string) => {
 try {
     const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
@@ -265,7 +266,9 @@ const searchAddress = async (query:Record<string,any>) => {
 };
 
 const singleAaddressFromDB = async (addressId: string,lang:string='English') => {
-  
+  if(!(new Types.ObjectId(addressId))){
+    return {error:'Invalid addressId'}
+  }
   const cache = await RedisHelper.redisGet(`${addressId}`,{lang:lang});
   if(cache) {
     console.log('cache found');
