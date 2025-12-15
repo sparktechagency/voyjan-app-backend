@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
 import { AddressModel, IAddress } from "./address.interface";
 
+
+mongoose.set('strictQuery', true);
+
+mongoose.connection.on('error', (err: any) => {
+  if (err.name === 'CastError') {
+    console.error('Mongoose CastError:', err.path, err.value);
+  }
+});
+
+
 const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
     name: { type: String, required: true },
     latitude: { type: Number, required: true },
@@ -51,6 +61,13 @@ addressSchema.pre("save", function (next) {
     next();
 })
 
+
+addressSchema.post(['find', 'findOne', 'findOneAndUpdate'], function (error:any, doc:any, next:any) {
+  if (error.name === 'CastError') {
+    return next(new Error(`Invalid Address ID: ${error.value}`));
+  }
+  next(error);
+});
 
 
 
