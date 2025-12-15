@@ -31,6 +31,7 @@ import { getCitySummary } from '../../../helpers/cityHelper';
 import { Category } from '../category/category.model';
 import { TripAdvisorHelper } from '../../../helpers/tripAdvisorHelper';
 import { Types } from 'mongoose';
+import { safeObjectId } from '../../../helpers/mongoIdChecker';
 const createAddressIntoDB = async (address: string) => {
 try {
     const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
@@ -342,6 +343,9 @@ async function createBackegroundDescription(address:any) {
 try {
       address.diff_lang = await translateLanguages(address.summary!, address.name,address.type!,address.place,address.long_descreption)
     // await elasticHelper.updateIndex('address', address._id.toString()!, address)
+    if(!safeObjectId(address._id)){
+      return
+    }
       await Address.findOneAndUpdate({ _id: address._id }, {
     diff_lang: address.diff_lang,}, {
     new: true,
@@ -355,6 +359,8 @@ try {
 
 async function addmissingImages(address:IAddress&{_id:string}) {
 try {
+
+  if(!safeObjectId(address._id)) return
   
   const images = await getImagesFromApi(address.name);
   await Address.findOneAndUpdate({ _id: address._id }, {
