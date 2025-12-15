@@ -62,7 +62,7 @@ addressSchema.pre("save", function (next) {
 })
 
 
-addressSchema.post(['find', 'findOne', 'findOneAndUpdate'], function (error:any, doc:any, next:any) {
+addressSchema.post(['find', 'findOne', 'findOneAndUpdate','save','validate'], function (error:any, doc:any, next:any) {
   if (error.name === 'CastError') {
     return next(new Error(`Invalid Address ID: ${error.value}`));
   }
