@@ -34,7 +34,7 @@ export function startWorker() {
 
       await restoreCategoryData();
       await restoreLang();
-      // await addCategory();
+      await addCategory();
 
       console.log('Cron Job Runned');
     } catch (error) {
@@ -148,17 +148,29 @@ async function implementType(data: { _id: string; type: string }[]) {
 
 async function addCategory() {
   try {
-    const unFinishedData = await Address.find({$or:[
-      {type:{$exists:false}},
-      {type:'Other'}
-    ],
-  createdAt:{$gt:new Date(new Date().getTime() - 7 * 60 * 1000)}
-  }).limit(10).lean();
-    await addTypeInExistingAddress(unFinishedData as any);
+    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
+
+    const unFinishedData = await Address.find({
+      createdAt: { $lte: twentyMinutesAgo },
+      $or: [
+        { type: { $exists: false } },
+        { type: "Other" },
+      ],
+    })
+      .limit(10)
+      .lean();
+
+    if (unFinishedData.length < 1) return;
+
+    const data = await fixTypeUsingAI(unFinishedData as any);
+    if (data.length < 1) return;
+
+    await implementType(data as any);
   } catch (error) {
     console.log(error);
   }
 }
+
 
 export async function BulkUpdateAddress() {
   try {
