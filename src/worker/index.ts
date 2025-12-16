@@ -34,7 +34,7 @@ export function startWorker() {
 
       await restoreCategoryData();
       await restoreLang();
-
+      await addCategory();
 
       console.log('Cron Job Runned');
     } catch (error) {
