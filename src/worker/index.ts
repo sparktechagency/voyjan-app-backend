@@ -79,9 +79,9 @@ const  restoreCategoryData = async () => {
           {type:'other'}
         ],
         // only get data which data left 10 minited of created date
-        createdAt: {
-          $lt: new Date(Date.now() - 10 * 60 * 1000),
-        },
+        // createdAt: {
+        //   $lt: new Date(Date.now() - 10 * 60 * 1000),
+        // },
         
       },
       { _id: 1, summary: 1, diff_lang: 1 }
