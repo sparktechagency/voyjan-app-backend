@@ -68,14 +68,21 @@ const restoreLang = async () => {
   }
 };
 
-const   restoreCategoryData = async () => {
+const  restoreCategoryData = async () => {
   try {
     const categories = await Category.find({}).lean();
 
     const unFinishedData = await Address.find(
       {
-        type: { $nin: categories.map(c => c.name) },
-        address_add: { $exists: false },
+        $or:[
+          {type: { $nin: categories.map(c => c.name) }},
+          {type:'other'}
+        ],
+        // only get data which data left 10 minited of created date
+        createdAt: {
+          $gt: new Date(Date.now() - 10 * 60 * 1000),
+        },
+        
       },
       { _id: 1, summary: 1, diff_lang: 1 }
     )
