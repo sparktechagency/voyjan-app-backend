@@ -146,6 +146,20 @@ async function implementType(data: { _id: string; type: string }[]) {
   }
 }
 
+async function addCategory() {
+  try {
+    const unFinishedData = await Address.find({$or:[
+      {type:{$exists:false}},
+      {type:'Other'}
+    ],
+  createdAt:{$gt:new Date(new Date().getTime() - 7 * 60 * 1000)}
+  }).limit(10).lean();
+    await addTypeInExistingAddress(unFinishedData as any);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function BulkUpdateAddress() {
   try {
     // const allData = await Address.find({}, { type: 1 }).lean();
