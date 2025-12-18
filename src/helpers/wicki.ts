@@ -478,36 +478,13 @@ try {
     const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(limit).lean();
   
   const data = await getLongDescriptionUsingAI(alladdress)
-  console.log(`======================>${data}`);
-  if(data?.data?.length ){
-    const someNull = data?.data?.some(async (id) => {
-      const data = Types.ObjectId.isValid(id?._id);
-      return !data
-    })
 
-    if(someNull){
-      return
-    }
-  }
-
-  if(!data?.unpopular?.length){
-    const isNull = data?.unpopular?.some(async (id) => {
-      const data = Types.ObjectId.isValid(id);
-      return !data
-    })
-
-    if(isNull){
-      return
-    }
-  }
 
 
   console.log(`======================>${data}`);
   
 
-  if(!data?.data){
-    return
-  }
+
   await Promise.all(data?.data?.map(async (address) => {
     if(!(new Types.ObjectId(address._id))){
       return
