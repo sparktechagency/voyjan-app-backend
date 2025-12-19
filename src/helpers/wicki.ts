@@ -499,16 +499,7 @@ try {
     elasticHelper.updateIndex('address',data?._id.toString()!,{...data?.toObject(),diff_lang:data?.diff_lang||{demo:"demo"}});
   }))
 
-  if(data?.unpopular?.length){
-    const isNull = data?.unpopular?.some(async (id:string) => {
-      const data = Types.ObjectId.isValid(id);
-      return !data
-    })
 
-    if(isNull){
-      return
-    }
-  }
 
   if(!data?.unpopular?.length){
     return

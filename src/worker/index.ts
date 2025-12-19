@@ -41,6 +41,28 @@ export function startWorker() {
       console.log(error);
     }
   });
+
+  // cron job after every 10 minutes
+  cronJob.schedule('*/10 * * * *', async () => {
+    try {
+      // get 10 miniutes ago data of address
+      const addresses = await Address.find({
+        createdAt: {
+          $gte: new Date(Date.now() - 10 * 60 * 1000),
+        },
+        type:'Other',
+      }).lean().limit(100);
+      const plainAddresses = addresses.map((addr) => ({
+        _id: addr._id.toString(),
+        summary: addr.summary,
+      }));
+      const types = await fixTypeUsingAI(plainAddresses as any);
+      if (types.length < 1) return;
+      await implementType(types as any);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 }
 
 const restoreLang = async () => {
@@ -68,7 +90,7 @@ const restoreLang = async () => {
   }
 };
 
-const   restoreCategoryData = async () => {
+const restoreCategoryData = async () => {
   try {
     const categories = await Category.find({}).lean();
 
