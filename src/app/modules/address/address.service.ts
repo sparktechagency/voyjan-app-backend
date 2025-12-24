@@ -114,7 +114,7 @@ try {
         TripAdvisorHelper.getLocationDetailsByTripAdvisor(row?.name,'en','')
       ])
       const data = {
-      name: getWikiData?.title||tripAdvisorData?.name || row.name,
+      name:row.name || getWikiData?.title||tripAdvisorData?.name ,
       latitude: getWikiData?.coordinates?.lat || Number(tripAdvisorData?.latitude) || Number(row.latitude),
       longitude: getWikiData?.coordinates?.lon || Number(tripAdvisorData?.longitude) || Number(row.longitude),
       place: getWikiData?.title ||tripAdvisorData?.name || row.name,
