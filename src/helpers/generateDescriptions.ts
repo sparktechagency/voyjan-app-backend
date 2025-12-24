@@ -81,7 +81,7 @@ Return the result in this JSON format:
 }
 
 
-export const getLongDescriptionUsingAI = async (address: IAddress[]):Promise<{data:{short_descreption:string,long_descreption:string,type:string,_id:string}[],unpopular:string[]}> => {
+export const getLongDescriptionUsingAI = async (address: IAddress[]):Promise<{data:{short_description:string,long_description:string,type:string,_id:string}[],unpopular:string[]}> => {
   try {
       const categories = (await Category.find({})).map(c => c.name);
   const enCodedAddress = encode.encode(address?.map((a:any)=>({...a,_id:a._id.toString()})) as any);
@@ -105,6 +105,8 @@ Your task:
    - short_description (maximum 50 words)
    - long_description (detailed explanation)
 6. Do NOT add explanations, comments, markdown, or extra text.
+
+7. result will be always in english language.
 
 Return ONLY valid JSON in the following format:
 

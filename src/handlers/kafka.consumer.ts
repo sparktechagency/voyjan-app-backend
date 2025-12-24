@@ -10,6 +10,8 @@ export const addressConsumer = async () => {
     await consumer.run({ eachBatch: async ({ batch, heartbeat,resolveOffset, commitOffsetsIfNecessary }) => {
 
         batch.messages.forEach(async (message) => {
+   
+            
             const data = JSON.parse(message.value?.toString() as string);
 
             await AddressService.createAddressIntoDB(data);
@@ -137,12 +139,16 @@ export const updateTypeConsumer = async () => {
 
 export const handleCsvConsumer = async () => {
     try {
+             console.log('CSV Consumer');
     const consumer = kafka.consumer({ groupId: "csv" });
     await consumer.connect();
-    await consumer.subscribe({ topic: "csv", fromBeginning: true });
+    await consumer.subscribe({ topic: "csv-handle", fromBeginning: true });
     await consumer.run({ eachBatch: async ({ batch, heartbeat,resolveOffset, commitOffsetsIfNecessary }) => {
 
         batch.messages.forEach(async (message) => {
+      
+           
+            
             const data = JSON.parse(message.value?.toString() as string);
             await AddressService.addDataFromExcelSheet(data);
             resolveOffset(message.offset)

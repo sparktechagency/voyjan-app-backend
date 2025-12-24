@@ -4,6 +4,7 @@ import {
 } from '../../../helpers/getLatlongUsingAddress';
 import {
   addDetailsInExistingAddress,
+  addLongDescription,
   addNotFoundData,
   addShortDescription,
   geosearchEn,
@@ -32,6 +33,7 @@ import { Category } from '../category/category.model';
 import { TripAdvisorHelper } from '../../../helpers/tripAdvisorHelper';
 import { Types } from 'mongoose';
 import { safeObjectId } from '../../../helpers/mongoIdChecker';
+import { kafkaProducer } from '../../../handlers/kafka.producer';
 const createAddressIntoDB = async (address: string) => {
 try {
     const { latitude: lat, longitude: lon, place } = await getFromOSM(address);
@@ -50,7 +52,14 @@ try {
 const createAddressSingleIntoDB = async (address: IAddress) => {
   try {
   const details = await getCitySummary(address.name)
-  if(!details?.pageid) return
+  console.log(details);
+  
+  if(!details?.pageid) {
+    const getInformationByTripAdvisonr = await TripAdvisorHelper.getLocationDetailsByTripAdvisor(address.name,'en','');
+    console.log(getInformationByTripAdvisonr);
+    return
+    
+  }
   const data = {
     name: details?.title || address.name,
     latitude: details?.coordinates?.lat || address.latitude,
@@ -87,42 +96,57 @@ const addDataFromExcelSheet = async (pathData: string) => {
 try {
   
   const filePath = path.join(process.cwd(), 'uploads', pathData);
+ 
+  
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
+
+  
   const io = (global as any).io as Server
   
   // Convert to IAddress format
   const addresses = await Promise.all(
     sheet.map(async row =>{
-      const getWikiData =await getCitySummary(row?.name)
+      const [getWikiData, tripAdvisorData] = await Promise.all([
+        getCitySummary(row?.name),
+        TripAdvisorHelper.getLocationDetailsByTripAdvisor(row?.name,'en','')
+      ])
       const data = {
-      name: getWikiData?.title || row.name,
-      latitude: getWikiData?.coordinates?.lat || Number(row.latitude),
-      longitude: getWikiData?.coordinates?.lon || Number(row.longitude),
-      place: getWikiData?.title || row.name,
-      formattedAddress: row['formatted address'],
-      imageUrl: row.imageUrl ? String(row.imageUrl).split(',') : [getWikiData?.thumbnail?.source || ''],
+      name: getWikiData?.title||tripAdvisorData?.name || row.name,
+      latitude: getWikiData?.coordinates?.lat || Number(tripAdvisorData?.latitude) || Number(row.latitude),
+      longitude: getWikiData?.coordinates?.lon || Number(tripAdvisorData?.longitude) || Number(row.longitude),
+      place: getWikiData?.title ||tripAdvisorData?.name || row.name,
+      formattedAddress: row['formatted_address'] ,
+      imageUrl: row.imageUrl ? String(row.imageUrl).split(',') :getWikiData?.thumbnail?.source ? [getWikiData?.thumbnail?.source] : tripAdvisorData?.photos?.length ? tripAdvisorData.photos : [],
       summary:getWikiData?.extract || '',
       type: row.type || row?.place,
-      city: row.city || undefined,
-      state: row.state || undefined,
-      country: row.country || undefined,
-      postalCode: row.postalCode || undefined,
+      city: row.city || tripAdvisorData?.address_obj?.city || undefined,
+      state: row.state || tripAdvisorData?.address_obj?.city || undefined,
+      country: row.country || tripAdvisorData?.address_obj?.country || undefined,
+      postalCode: row.postalCode || tripAdvisorData?.address_obj?.postalcode || undefined,
       location: {
         type: 'Point',
-        coordinates: [getWikiData?.coordinates?.lon || Number(row.longitude), getWikiData?.coordinates?.lat || Number(row.latitude)],
+        coordinates: [getWikiData?.coordinates?.lon || Number(tripAdvisorData?.longitude) || Number(row.longitude), getWikiData?.coordinates?.lat || Number(tripAdvisorData?.latitude) || Number(row.latitude)],
       },
-      pageId:getWikiData?.pageid || 0
+      pageId:getWikiData?.pageid||tripAdvisorData?.location_id || 0
     }
+
+
     io.emit('address', data);
+    
     return data
     }
   )
   );
 
 
-  await Address.insertMany(addresses);
+  for(const address of addresses){
+    const addressk = await Address.create(address);
+    await elasticHelper.createIndex("address", addressk._id.toString(), addressk);
+    io.emit('address', addressk);
+  }
+  addLongDescription(200,false);
   io.emit('address', {title:'completed'});
 
   return;

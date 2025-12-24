@@ -70,9 +70,11 @@ const restoreLang = async () => {
     const finishedData = await Address.find({
       $or: [{ diff_lang: '' }, { diff_lang: { $exists: false } }],
       address_add: true,
+      summary:{ $ne: '' }
     })
       .limit(1)
       .lean();
+      
 
     if (finishedData.length > 0) {
       for (const data of finishedData) {

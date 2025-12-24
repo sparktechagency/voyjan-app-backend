@@ -135,11 +135,11 @@ const getGetCategory = async (page: any) => {
 
   for (const category of categoriesDb) {
     if (
-     isTheCategoriesFunctionORNot && categories.some((c:any) => c.toLowerCase().includes(category.name.toLowerCase()))
+     isTheCategoriesFunctionORNot && categories?.some((c:any) => c.toLowerCase().includes(category.name.toLowerCase()))
     ) {
       placeType = category.name;
     }
-    else if(!isTheCategoriesFunctionORNot && categories.some((c:any) => c?.title?.toLowerCase().includes(category.name.toLowerCase()))){
+    else if(!isTheCategoriesFunctionORNot && categories?.some((c:any) => c?.title?.toLowerCase().includes(category.name.toLowerCase()))){
       placeType = category.name;
     }
   }
@@ -473,25 +473,20 @@ export const addTypeInExistingAddress = async (
   }
 };
 
-export const addLongDescription = async (limit:number=200) => {
+export const addLongDescription = async (limit:number=200,isDeletedNeed = true) => {
 try {
     const alladdress = await Address.find({address_add:false},{_id:1,name:1,formattedAddress:1}).limit(limit).lean();
   
   const data = await getLongDescriptionUsingAI(alladdress)
 
 
-
-  console.log(`======================>${data}`);
   
 
 
   await Promise.all(data?.data?.map(async (address) => {
-    if(!(new Types.ObjectId(address._id))){
-      return
-    }
     const data = await Address.findOneAndUpdate(
       { _id: address._id },
-      { long_descreption: address.long_descreption, summary: address.short_descreption ,type:address.type,address_add:true},
+      { long_descreption: address.long_description, summary: address.short_description ,type:address.type,address_add:true},
       { new: true }
     );
 
@@ -501,7 +496,7 @@ try {
 
 
 
-  if(!data?.unpopular?.length){
+  if(!data?.unpopular?.length && !isDeletedNeed){
     return
   }
 

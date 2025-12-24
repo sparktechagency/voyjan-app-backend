@@ -34,7 +34,7 @@ const saveSingleAddress = catchAsync(async (req:Request,res:Response) => {
 
 const saveSheetAddress = catchAsync(async (req:Request,res:Response) => {
     const doc = getSingleFilePath(req.files, 'doc');
-    await kafkaProducer.sendMessage('csv', doc);
+    await kafkaProducer.sendMessage('csv-handle', doc);
     sendResponse(res, {
         success: true,
         message: "Address created successfully",
