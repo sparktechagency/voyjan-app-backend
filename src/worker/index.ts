@@ -196,30 +196,37 @@ async function addCategory() {
 
 export async function BulkUpdateAddress() {
   try {
-    // const allData = await Address.find({}, { type: 1 }).lean();
-
-    // const chunkSize = 1000; // change as needed
-    // for (let i = 0; i < allData.length; i += chunkSize) {
-    //   const chunk = allData.slice(i, i + chunkSize);
-
-    //   const mapData = chunk.flatMap(d => [
-    //     { update: { _index: 'address', _id: d._id.toString() } },
-    //     { doc: { type: d.type } },
-    //   ]);
-
-    //   const res = await esClient.bulk({ body: mapData });
-
-    //   console.log(
-    //     `Chunk ${i / chunkSize + 1}: processed ${chunk.length} documents`
-    //   );
-
-    //   if (res.errors) {
-    //     console.error('Bulk update errors:', res.items);
-    //   }
-    // }
-
-    // console.log('Bulk update completed');
-
+    // bull delete all data in elasticsearch index
+    await esClient.deleteByQuery({
+      index: 'address',
+      body: {
+        query: {
+          match_all: {},
+        },
+      },
+    });
+    console.log('Deleted all data from elasticsearch index');
+    const allAddresses = await Address.find({}).lean();
+    console.log(`Found ${allAddresses.length} addresses in database`);
+    //create address index if not exists
+    const indexExists = await esClient.indices.exists({ index: 'address' });
+    if (!indexExists) {
+      await esClient.indices.create({ index: 'address' });
+      console.log('Created address index in elasticsearch');
+    }
+    // bulk insert all addresses to elasticsearch chunks of 1000
+    const chunkSize = 1000;
+    for (let i = 0; i < allAddresses.length; i += chunkSize) {
+      const chunk = allAddresses.slice(i, i + chunkSize);
+      const body = chunk.flatMap(doc => [
+        { index: { _index: 'address', _id: doc._id.toString() } },
+        doc,
+      ]);
+      
+      await esClient.bulk({ refresh: true, body });
+      console.log(`Inserted ${i + chunk.length} / ${allAddresses.length}`);
+    }
+    console.log('Bulk update to elasticsearch completed');
    
   } catch (error) {
     console.error(error);
