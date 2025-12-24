@@ -77,7 +77,8 @@ const createAddressSingleIntoDB = async (address: IAddress) => {
       type: 'Point',
       coordinates: [details?.coordinates?.lon || address.longitude, details?.coordinates?.lat || address.latitude], // lng, lat
     },
-    pageid: details?.pageid
+    pageid: details?.pageid,
+    is_personal:true
   }
   
   await Address.create(data);
@@ -129,7 +130,8 @@ try {
         type: 'Point',
         coordinates: [getWikiData?.coordinates?.lon || Number(tripAdvisorData?.longitude) || Number(row.longitude), getWikiData?.coordinates?.lat || Number(tripAdvisorData?.latitude) || Number(row.latitude)],
       },
-      pageId:getWikiData?.pageid||tripAdvisorData?.location_id || 0
+      pageId:getWikiData?.pageid||tripAdvisorData?.location_id || 0,
+      is_personal:true
     }
 
 

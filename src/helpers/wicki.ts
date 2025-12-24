@@ -500,7 +500,7 @@ try {
     return
   }
 
-  await Address.deleteMany({_id:{$in:data?.unpopular}})
+  await Address.deleteMany({_id:{$in:data?.unpopular},$or:[{is_personal:{$exists:false}},{is_personal:false}]});
 
   if(data?.unpopular?.length){
     await Promise.all(data.unpopular.map(async (id:string) => {

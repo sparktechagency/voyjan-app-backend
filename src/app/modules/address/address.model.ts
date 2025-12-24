@@ -47,6 +47,7 @@ const addressSchema = new mongoose.Schema<IAddress, AddressModel>({
         default:false
     },
     web_url:{type:String,required:false},
+    is_personal:{type:Boolean,required:false,default:false}
 },{
     timestamps: true
 });

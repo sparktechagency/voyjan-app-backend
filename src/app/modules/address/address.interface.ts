@@ -25,7 +25,8 @@ export type IAddress = {
 
     address_add?:boolean
 
-    web_url?:string
+    web_url?:string,
+    is_personal?:boolean
     
 };
 
