@@ -42,7 +42,7 @@ async function main() {
       );
     });
 
-    BulkUpdateAddress()
+    // BulkUpdateAddress()
 
     //socket
     const io = new Server(server, {
