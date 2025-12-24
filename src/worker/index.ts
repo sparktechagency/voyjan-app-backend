@@ -215,7 +215,7 @@ export async function BulkUpdateAddress() {
       console.log('Created address index in elasticsearch');
     }
     // bulk insert all addresses to elasticsearch chunks of 1000
-    const chunkSize = 1000;
+    const chunkSize = 100;
     for (let i = 0; i < allAddresses.length; i += chunkSize) {
       const chunk = allAddresses.slice(i, i + chunkSize);
       const body = chunk.flatMap(doc => [
