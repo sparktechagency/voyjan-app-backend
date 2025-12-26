@@ -30,13 +30,11 @@ export function startWorker() {
   // run every 15 seconds
   cronJob.schedule('*/10 * * * * *', async () => {
     try {
-      console.log('error from cron job');
 
       await restoreCategoryData();
       await restoreLang();
       // await addCategory();
 
-      console.log('Cron Job Runned');
     } catch (error) {
       console.log(error);
     }
