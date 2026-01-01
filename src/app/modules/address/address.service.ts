@@ -396,7 +396,7 @@ try {
   // await elasticHelper.updateIndex('address', address._id.toString()!, address)
   await RedisHelper.keyDelete(`${address._id}:*`);
   await redisClient.del(`${address._id}:*`)
-  await RedisHelper.keyDelete(`address`);  
+  await RedisHelper.keyDelete(`address:*`);  
   console.log('images added');
 } catch (error) {
   console.log(error);
