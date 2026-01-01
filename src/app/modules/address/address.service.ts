@@ -320,6 +320,9 @@ if(lang!=='English') {
   }
 }
 
+console.log(address);
+
+
   if(!address.imageUrl?.length){
     addmissingImages(address as any)
   }
