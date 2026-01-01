@@ -320,10 +320,9 @@ if(lang!=='English') {
   }
 }
 
-console.log(address);
 
 
-  if(!address.imageUrl?.length){
+  if(!address.imageUrl?.length || address.imageUrl?.some((image) => image == null)) {
     addmissingImages(address as any)
   }
   if(!address.long_descreption){
