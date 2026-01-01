@@ -385,8 +385,8 @@ try {
 
 async function addmissingImages(address:IAddress&{_id:string}) {
 try {
-
-  if(!safeObjectId(address._id)) return
+  console.log("image finding by pixbay");
+  
   
   const images = await getImagesFromApi(address.name);
   await Address.findOneAndUpdate({ _id: address._id }, {
