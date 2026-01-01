@@ -320,6 +320,7 @@ if(lang!=='English') {
   }
 }
 
+console.log(address.imageUrl);
 
 
   if(!address.imageUrl?.length || address.imageUrl?.some((image) => image == null)) {
